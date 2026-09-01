@@ -180,6 +180,8 @@ target/imobiliaria-api-0.0.1-SNAPSHOT.jar
 
 ## Testes
 
+Os testes cobrem o contrato dos endpoints publicos de imoveis e do login administrativo.
+
 ```powershell
 .\mvnw.cmd test
 ```
