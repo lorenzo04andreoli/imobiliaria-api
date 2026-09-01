@@ -24,7 +24,7 @@ O projeto faz parte de uma aplicacao full stack composta por:
 ## Requisitos
 
 - JDK 17 ou superior
-- MySQL instalado e em execucao
+- MySQL instalado e em execucao ou Docker
 - Git
 
 Nao e necessario instalar Maven globalmente, pois o projeto usa Maven Wrapper.
@@ -40,21 +40,55 @@ src/main/resources/application.properties
 Configuracao atual do banco:
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=America/Sao_Paulo
-spring.datasource.username=root
-spring.datasource.password=
+spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=America/Sao_Paulo}
+spring.datasource.username=${DB_USERNAME:root}
+spring.datasource.password=${DB_PASSWORD:}
 ```
 
-Se o seu MySQL tiver senha, preencha:
+Se o seu MySQL tiver senha, defina pelo ambiente:
 
-```properties
-spring.datasource.password=sua-senha
+```powershell
+$env:DB_PASSWORD="sua-senha"
 ```
 
 O banco `imobiliaria_db` pode ser criado automaticamente por causa do parametro `createDatabaseIfNotExist=true`. Se preferir criar manualmente:
 
 ```sql
 CREATE DATABASE imobiliaria_db;
+```
+
+## MySQL com Docker Compose
+
+O projeto possui um `docker-compose.yml` para subir MySQL local.
+
+Crie um arquivo `.env` na raiz do projeto usando `.env.example` como referencia. O arquivo `.env` nao deve ser commitado.
+
+Exemplo de variaveis:
+
+```env
+MYSQL_ROOT_PASSWORD=troque-a-senha-root
+MYSQL_DATABASE=imobiliaria_db
+MYSQL_USER=imobiliaria_user
+MYSQL_PASSWORD=troque-a-senha-do-banco
+MYSQL_PORT=3306
+
+DB_URL=jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=America/Sao_Paulo
+DB_USERNAME=imobiliaria_user
+DB_PASSWORD=troque-a-senha-do-banco
+
+JWT_SECRET=troque-por-uma-chave-grande-com-mais-de-32-caracteres
+```
+
+Subir o banco:
+
+```powershell
+docker compose up -d
+```
+
+Parar o banco:
+
+```powershell
+docker compose down
 ```
 
 ## Variaveis Sensiveis
