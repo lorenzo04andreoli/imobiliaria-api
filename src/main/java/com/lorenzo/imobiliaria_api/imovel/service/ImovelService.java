@@ -7,11 +7,13 @@ import com.lorenzo.imobiliaria_api.imovel.ImagemImovelRepository;
 import com.lorenzo.imobiliaria_api.imovel.StatusImovel;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImovelFiltroRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
@@ -25,6 +27,23 @@ public class ImovelService {
 
     public List<ImovelResponse> listarPublicados() {
         return imovelRepository.findByStatusOrderByCriadoEmDesc(StatusImovel.PUBLICADO)
+                .stream()
+                .map(ImovelResponse::fromEntity)
+                .toList();
+    }
+
+    public List<ImovelResponse> listarPublicados(ImovelFiltroRequest filtro) {
+        return imovelRepository.buscarPublicadosComFiltros(
+                        StatusImovel.PUBLICADO,
+                        limparTexto(filtro.cidade()),
+                        limparTexto(filtro.bairro()),
+                        filtro.tipo(),
+                        filtro.precoMin(),
+                        filtro.precoMax(),
+                        filtro.quartosMin(),
+                        filtro.banheirosMin(),
+                        filtro.vagasMin()
+                )
                 .stream()
                 .map(ImovelResponse::fromEntity)
                 .toList();
@@ -149,5 +168,9 @@ public class ImovelService {
         imovel.setVagas(request.vagas());
         imovel.setArea(request.area());
         imovel.setStatus(request.status() != null ? request.status() : StatusImovel.RASCUNHO);
+    }
+
+    private String limparTexto(String valor) {
+        return StringUtils.hasText(valor) ? valor.trim() : null;
     }
 }
