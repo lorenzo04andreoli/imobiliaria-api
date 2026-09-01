@@ -57,8 +57,24 @@ public class ImovelService {
     }
 
     public ImovelResponse inativar(Long id) {
+        return alterarStatus(id, StatusImovel.INATIVO);
+    }
+
+    public ImovelResponse publicar(Long id) {
+        return alterarStatus(id, StatusImovel.PUBLICADO);
+    }
+
+    public ImovelResponse marcarComoVendido(Long id) {
+        return alterarStatus(id, StatusImovel.VENDIDO);
+    }
+
+    public ImovelResponse marcarComoRascunho(Long id) {
+        return alterarStatus(id, StatusImovel.RASCUNHO);
+    }
+
+    private ImovelResponse alterarStatus(Long id, StatusImovel status) {
         Imovel imovel = buscarPorId(id);
-        imovel.setStatus(StatusImovel.INATIVO);
+        imovel.setStatus(status);
 
         return ImovelResponse.fromEntity(imovelRepository.save(imovel));
     }

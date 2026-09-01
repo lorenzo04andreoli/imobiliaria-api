@@ -50,4 +50,19 @@ public class ImovelAdminController {
     public ImovelResponse inativar(@PathVariable Long id) {
         return imovelService.inativar(id);
     }
+
+    @PatchMapping("/{id}/publicar")
+    public ImovelResponse publicar(@PathVariable Long id) {
+        return imovelService.publicar(id);
+    }
+
+    @PatchMapping("/{id}/vender")
+    public ImovelResponse vender(@PathVariable Long id) {
+        return imovelService.marcarComoVendido(id);
+    }
+
+    @PatchMapping("/{id}/rascunho")
+    public ImovelResponse rascunho(@PathVariable Long id) {
+        return imovelService.marcarComoRascunho(id);
+    }
 }
