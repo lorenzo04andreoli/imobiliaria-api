@@ -32,7 +32,9 @@ public class ImovelPublicController {
             @RequestParam(required = false) Integer banheirosMin,
             @RequestParam(required = false) Integer vagasMin,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "criadoEm") String sort,
+            @RequestParam(defaultValue = "desc") String direction
     ) {
         ImovelFiltroRequest filtro = new ImovelFiltroRequest(
                 cidade,
@@ -45,7 +47,7 @@ public class ImovelPublicController {
                 vagasMin
         );
 
-        return imovelService.listarPublicados(filtro, page, size);
+        return imovelService.listarPublicados(filtro, page, size, sort, direction);
     }
 
     @GetMapping("/{id}")

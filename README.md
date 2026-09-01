@@ -259,6 +259,26 @@ A listagem publica tambem aceita paginacao:
 GET /api/imoveis?page=0&size=12
 ```
 
+E ordenacao:
+
+```http
+GET /api/imoveis?sort=preco&direction=asc
+```
+
+Campos de ordenacao disponiveis:
+
+- `criadoEm`
+- `preco`
+- `area`
+- `quartos`
+- `banheiros`
+- `vagas`
+
+Direcoes disponiveis:
+
+- `asc`
+- `desc`
+
 Resposta da listagem publica:
 
 ```json

@@ -20,12 +20,21 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class ImovelService {
 
     private static final int TAMANHO_MAXIMO_PAGINA = 50;
+    private static final Map<String, String> CAMPOS_ORDENACAO_PUBLICA = Map.of(
+            "criadoEm", "criadoEm",
+            "preco", "preco",
+            "area", "area",
+            "quartos", "quartos",
+            "banheiros", "banheiros",
+            "vagas", "vagas"
+    );
 
     private final ImovelRepository imovelRepository;
     private final ImagemImovelRepository imagemImovelRepository;
@@ -37,11 +46,17 @@ public class ImovelService {
                 .toList();
     }
 
-    public PaginaResponse<ImovelResponse> listarPublicados(ImovelFiltroRequest filtro, int page, int size) {
+    public PaginaResponse<ImovelResponse> listarPublicados(
+            ImovelFiltroRequest filtro,
+            int page,
+            int size,
+            String sort,
+            String direction
+    ) {
         PageRequest pageable = PageRequest.of(
                 Math.max(page, 0),
                 limitarTamanhoPagina(size),
-                Sort.by(Sort.Direction.DESC, "criadoEm")
+                criarOrdenacao(sort, direction)
         );
 
         return PaginaResponse.fromPage(
@@ -188,5 +203,14 @@ public class ImovelService {
 
     private int limitarTamanhoPagina(int size) {
         return Math.max(1, Math.min(size, TAMANHO_MAXIMO_PAGINA));
+    }
+
+    private Sort criarOrdenacao(String sort, String direction) {
+        String campo = CAMPOS_ORDENACAO_PUBLICA.getOrDefault(sort, "criadoEm");
+        Sort.Direction direcao = "asc".equalsIgnoreCase(direction)
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC;
+
+        return Sort.by(direcao, campo);
     }
 }
