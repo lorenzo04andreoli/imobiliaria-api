@@ -178,6 +178,12 @@ O arquivo `.jar` sera gerado em:
 target/imobiliaria-api-0.0.1-SNAPSHOT.jar
 ```
 
+## Testes
+
+```powershell
+.\mvnw.cmd test
+```
+
 ## Swagger
 
 Com a aplicacao rodando, acesse:
