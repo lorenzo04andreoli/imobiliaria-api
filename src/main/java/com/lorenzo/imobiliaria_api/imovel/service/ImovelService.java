@@ -1,7 +1,9 @@
 package com.lorenzo.imobiliaria_api.imovel.service;
 
+import com.lorenzo.imobiliaria_api.imovel.Imovel;
 import com.lorenzo.imobiliaria_api.imovel.ImovelRepository;
 import com.lorenzo.imobiliaria_api.imovel.StatusImovel;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,5 +29,27 @@ public class ImovelService {
         return imovelRepository.findByIdAndStatus(id, StatusImovel.PUBLICADO)
                 .map(ImovelResponse::fromEntity)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Imovel nao encontrado"));
+    }
+
+    public ImovelResponse criar(ImovelRequest request) {
+        Imovel imovel = new Imovel();
+        preencherDados(imovel, request);
+
+        return ImovelResponse.fromEntity(imovelRepository.save(imovel));
+    }
+
+    private void preencherDados(Imovel imovel, ImovelRequest request) {
+        imovel.setTitulo(request.titulo());
+        imovel.setDescricao(request.descricao());
+        imovel.setPreco(request.preco());
+        imovel.setTipo(request.tipo());
+        imovel.setCidade(request.cidade());
+        imovel.setBairro(request.bairro());
+        imovel.setEndereco(request.endereco());
+        imovel.setQuartos(request.quartos());
+        imovel.setBanheiros(request.banheiros());
+        imovel.setVagas(request.vagas());
+        imovel.setArea(request.area());
+        imovel.setStatus(request.status() != null ? request.status() : StatusImovel.RASCUNHO);
     }
 }
