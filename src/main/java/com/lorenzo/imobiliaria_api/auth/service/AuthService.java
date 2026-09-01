@@ -13,18 +13,23 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final AuthenticationManager authenticationManager;
+    private final TokenService tokenService;
 
     public LoginResponse login(LoginRequest request) {
         UsernamePasswordAuthenticationToken credentials =
                 new UsernamePasswordAuthenticationToken(request.email(), request.senha());
 
         Usuario usuario = (Usuario) authenticationManager.authenticate(credentials).getPrincipal();
+        String token = tokenService.gerarToken(usuario);
 
         return new LoginResponse(
                 usuario.getId(),
                 usuario.getNome(),
                 usuario.getEmail(),
-                usuario.getRole()
+                usuario.getRole(),
+                token,
+                "Bearer",
+                tokenService.getExpirationSeconds()
         );
     }
 }
