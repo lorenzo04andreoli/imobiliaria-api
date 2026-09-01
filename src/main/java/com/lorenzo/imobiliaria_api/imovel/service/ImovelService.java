@@ -38,6 +38,18 @@ public class ImovelService {
         return ImovelResponse.fromEntity(imovelRepository.save(imovel));
     }
 
+    public ImovelResponse atualizar(Long id, ImovelRequest request) {
+        Imovel imovel = buscarPorId(id);
+        preencherDados(imovel, request);
+
+        return ImovelResponse.fromEntity(imovelRepository.save(imovel));
+    }
+
+    private Imovel buscarPorId(Long id) {
+        return imovelRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Imovel nao encontrado"));
+    }
+
     private void preencherDados(Imovel imovel, ImovelRequest request) {
         imovel.setTitulo(request.titulo());
         imovel.setDescricao(request.descricao());
