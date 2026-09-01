@@ -9,6 +9,8 @@ public interface ImovelRepository extends JpaRepository<Imovel, Long> {
 
     List<Imovel> findByStatus(StatusImovel status);
 
+    List<Imovel> findAllByOrderByCriadoEmDesc();
+
     List<Imovel> findByStatusOrderByCriadoEmDesc(StatusImovel status);
 
     Optional<Imovel> findByIdAndStatus(Long id, StatusImovel status);

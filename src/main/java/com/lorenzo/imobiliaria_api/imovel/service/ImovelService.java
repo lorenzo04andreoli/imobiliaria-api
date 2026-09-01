@@ -31,6 +31,17 @@ public class ImovelService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Imovel nao encontrado"));
     }
 
+    public List<ImovelResponse> listarTodos() {
+        return imovelRepository.findAllByOrderByCriadoEmDesc()
+                .stream()
+                .map(ImovelResponse::fromEntity)
+                .toList();
+    }
+
+    public ImovelResponse buscarPorIdAdmin(Long id) {
+        return ImovelResponse.fromEntity(buscarPorId(id));
+    }
+
     public ImovelResponse criar(ImovelRequest request) {
         Imovel imovel = new Imovel();
         preencherDados(imovel, request);
