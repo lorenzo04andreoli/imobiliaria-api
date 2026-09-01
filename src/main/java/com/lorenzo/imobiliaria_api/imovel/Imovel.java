@@ -7,6 +7,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -19,6 +21,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.time.LocalDateTime;
 
 @Entity
@@ -84,6 +88,10 @@ public class Imovel {
 
     @Column(nullable = false)
     private LocalDateTime atualizadoEm;
+
+    @OneToMany(mappedBy = "imovel")
+    @OrderBy("ordem ASC")
+    private List<ImagemImovel> imagens = new ArrayList<>();
 
     @PrePersist
     void aoCriar() {
