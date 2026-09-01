@@ -3,6 +3,7 @@ package com.lorenzo.imobiliaria_api.imovel.controller;
 import com.lorenzo.imobiliaria_api.imovel.TipoImovel;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelFiltroRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
+import com.lorenzo.imobiliaria_api.imovel.dto.PaginaResponse;
 import com.lorenzo.imobiliaria_api.imovel.service.ImovelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/imoveis")
@@ -22,7 +22,7 @@ public class ImovelPublicController {
     private final ImovelService imovelService;
 
     @GetMapping
-    public List<ImovelResponse> listar(
+    public PaginaResponse<ImovelResponse> listar(
             @RequestParam(required = false) String cidade,
             @RequestParam(required = false) String bairro,
             @RequestParam(required = false) TipoImovel tipo,
@@ -30,7 +30,9 @@ public class ImovelPublicController {
             @RequestParam(required = false) BigDecimal precoMax,
             @RequestParam(required = false) Integer quartosMin,
             @RequestParam(required = false) Integer banheirosMin,
-            @RequestParam(required = false) Integer vagasMin
+            @RequestParam(required = false) Integer vagasMin,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size
     ) {
         ImovelFiltroRequest filtro = new ImovelFiltroRequest(
                 cidade,
@@ -43,7 +45,7 @@ public class ImovelPublicController {
                 vagasMin
         );
 
-        return imovelService.listarPublicados(filtro);
+        return imovelService.listarPublicados(filtro, page, size);
     }
 
     @GetMapping("/{id}")

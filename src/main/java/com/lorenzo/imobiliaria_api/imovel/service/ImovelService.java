@@ -10,7 +10,10 @@ import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelFiltroRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
+import com.lorenzo.imobiliaria_api.imovel.dto.PaginaResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -22,6 +25,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ImovelService {
 
+    private static final int TAMANHO_MAXIMO_PAGINA = 50;
+
     private final ImovelRepository imovelRepository;
     private final ImagemImovelRepository imagemImovelRepository;
 
@@ -32,8 +37,15 @@ public class ImovelService {
                 .toList();
     }
 
-    public List<ImovelResponse> listarPublicados(ImovelFiltroRequest filtro) {
-        return imovelRepository.buscarPublicadosComFiltros(
+    public PaginaResponse<ImovelResponse> listarPublicados(ImovelFiltroRequest filtro, int page, int size) {
+        PageRequest pageable = PageRequest.of(
+                Math.max(page, 0),
+                limitarTamanhoPagina(size),
+                Sort.by(Sort.Direction.DESC, "criadoEm")
+        );
+
+        return PaginaResponse.fromPage(
+                imovelRepository.buscarPublicadosComFiltros(
                         StatusImovel.PUBLICADO,
                         limparTexto(filtro.cidade()),
                         limparTexto(filtro.bairro()),
@@ -42,11 +54,11 @@ public class ImovelService {
                         filtro.precoMax(),
                         filtro.quartosMin(),
                         filtro.banheirosMin(),
-                        filtro.vagasMin()
-                )
-                .stream()
-                .map(ImovelResponse::fromEntity)
-                .toList();
+                        filtro.vagasMin(),
+                        pageable
+                ),
+                ImovelResponse::fromEntity
+        );
     }
 
     public ImovelResponse buscarPublicadoPorId(Long id) {
@@ -172,5 +184,9 @@ public class ImovelService {
 
     private String limparTexto(String valor) {
         return StringUtils.hasText(valor) ? valor.trim() : null;
+    }
+
+    private int limitarTamanhoPagina(int size) {
+        return Math.max(1, Math.min(size, TAMANHO_MAXIMO_PAGINA));
     }
 }

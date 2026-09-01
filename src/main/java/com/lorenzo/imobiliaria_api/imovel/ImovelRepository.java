@@ -1,5 +1,7 @@
 package com.lorenzo.imobiliaria_api.imovel;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,9 +32,8 @@ public interface ImovelRepository extends JpaRepository<Imovel, Long> {
               and (:quartosMin is null or i.quartos >= :quartosMin)
               and (:banheirosMin is null or i.banheiros >= :banheirosMin)
               and (:vagasMin is null or i.vagas >= :vagasMin)
-            order by i.criadoEm desc
             """)
-    List<Imovel> buscarPublicadosComFiltros(
+    Page<Imovel> buscarPublicadosComFiltros(
             @Param("status") StatusImovel status,
             @Param("cidade") String cidade,
             @Param("bairro") String bairro,
@@ -41,6 +42,7 @@ public interface ImovelRepository extends JpaRepository<Imovel, Long> {
             @Param("precoMax") BigDecimal precoMax,
             @Param("quartosMin") Integer quartosMin,
             @Param("banheirosMin") Integer banheirosMin,
-            @Param("vagasMin") Integer vagasMin
+            @Param("vagasMin") Integer vagasMin,
+            Pageable pageable
     );
 }

@@ -253,6 +253,26 @@ Filtros disponiveis:
 - `banheirosMin`
 - `vagasMin`
 
+A listagem publica tambem aceita paginacao:
+
+```http
+GET /api/imoveis?page=0&size=12
+```
+
+Resposta da listagem publica:
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 12,
+  "totalElements": 0,
+  "totalPages": 0,
+  "first": true,
+  "last": true
+}
+```
+
 ## Endpoints Administrativos
 
 ```http
