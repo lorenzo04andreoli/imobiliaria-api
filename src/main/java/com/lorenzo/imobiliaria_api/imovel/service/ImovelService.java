@@ -2,7 +2,11 @@ package com.lorenzo.imobiliaria_api.imovel.service;
 
 import com.lorenzo.imobiliaria_api.imovel.Imovel;
 import com.lorenzo.imobiliaria_api.imovel.ImovelRepository;
+import com.lorenzo.imobiliaria_api.imovel.ImagemImovel;
+import com.lorenzo.imobiliaria_api.imovel.ImagemImovelRepository;
 import com.lorenzo.imobiliaria_api.imovel.StatusImovel;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelRequest;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +21,7 @@ import java.util.List;
 public class ImovelService {
 
     private final ImovelRepository imovelRepository;
+    private final ImagemImovelRepository imagemImovelRepository;
 
     public List<ImovelResponse> listarPublicados() {
         return imovelRepository.findByStatusOrderByCriadoEmDesc(StatusImovel.PUBLICADO)
@@ -40,6 +45,28 @@ public class ImovelService {
 
     public ImovelResponse buscarPorIdAdmin(Long id) {
         return ImovelResponse.fromEntity(buscarPorId(id));
+    }
+
+    public List<ImagemImovelResponse> listarImagens(Long imovelId) {
+        buscarPorId(imovelId);
+
+        return imagemImovelRepository.findByImovelIdOrderByOrdemAsc(imovelId)
+                .stream()
+                .map(ImagemImovelResponse::fromEntity)
+                .toList();
+    }
+
+    public ImagemImovelResponse adicionarImagem(Long imovelId, ImagemImovelRequest request) {
+        Imovel imovel = buscarPorId(imovelId);
+        boolean primeiraImagem = imagemImovelRepository.countByImovelId(imovelId) == 0;
+
+        ImagemImovel imagem = new ImagemImovel();
+        imagem.setImovel(imovel);
+        imagem.setUrl(request.url());
+        imagem.setOrdem(request.ordem() != null ? request.ordem() : 0);
+        imagem.setCapa(request.capa() != null ? request.capa() : primeiraImagem);
+
+        return ImagemImovelResponse.fromEntity(imagemImovelRepository.save(imagem));
     }
 
     public ImovelResponse criar(ImovelRequest request) {

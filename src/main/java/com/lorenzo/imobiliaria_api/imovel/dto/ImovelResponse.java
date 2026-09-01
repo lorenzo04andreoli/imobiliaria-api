@@ -6,6 +6,7 @@ import com.lorenzo.imobiliaria_api.imovel.TipoImovel;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record ImovelResponse(
         Long id,
@@ -21,6 +22,7 @@ public record ImovelResponse(
         Integer vagas,
         BigDecimal area,
         StatusImovel status,
+        List<ImagemImovelResponse> imagens,
         LocalDateTime criadoEm,
         LocalDateTime atualizadoEm
 ) {
@@ -40,6 +42,10 @@ public record ImovelResponse(
                 imovel.getVagas(),
                 imovel.getArea(),
                 imovel.getStatus(),
+                imovel.getImagens()
+                        .stream()
+                        .map(ImagemImovelResponse::fromEntity)
+                        .toList(),
                 imovel.getCriadoEm(),
                 imovel.getAtualizadoEm()
         );

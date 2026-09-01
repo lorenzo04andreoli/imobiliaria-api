@@ -7,4 +7,6 @@ import java.util.List;
 public interface ImagemImovelRepository extends JpaRepository<ImagemImovel, Long> {
 
     List<ImagemImovel> findByImovelIdOrderByOrdemAsc(Long imovelId);
+
+    long countByImovelId(Long imovelId);
 }

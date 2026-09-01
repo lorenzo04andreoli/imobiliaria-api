@@ -1,5 +1,7 @@
 package com.lorenzo.imobiliaria_api.imovel.controller;
 
+import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelRequest;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
 import com.lorenzo.imobiliaria_api.imovel.service.ImovelService;
@@ -35,10 +37,24 @@ public class ImovelAdminController {
         return imovelService.buscarPorIdAdmin(id);
     }
 
+    @GetMapping("/{id}/imagens")
+    public List<ImagemImovelResponse> listarImagens(@PathVariable Long id) {
+        return imovelService.listarImagens(id);
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ImovelResponse criar(@RequestBody @Valid ImovelRequest request) {
         return imovelService.criar(request);
+    }
+
+    @PostMapping("/{id}/imagens")
+    @ResponseStatus(HttpStatus.CREATED)
+    public ImagemImovelResponse adicionarImagem(
+            @PathVariable Long id,
+            @RequestBody @Valid ImagemImovelRequest request
+    ) {
+        return imovelService.adicionarImagem(id, request);
     }
 
     @PutMapping("/{id}")
