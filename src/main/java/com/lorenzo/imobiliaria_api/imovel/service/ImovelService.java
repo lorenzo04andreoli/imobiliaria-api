@@ -66,6 +66,20 @@ public class ImovelService {
         imagem.setOrdem(request.ordem() != null ? request.ordem() : 0);
         imagem.setCapa(request.capa() != null ? request.capa() : primeiraImagem);
 
+        if (Boolean.TRUE.equals(imagem.getCapa())) {
+            removerCapaDasImagens(imovelId);
+        }
+
+        return ImagemImovelResponse.fromEntity(imagemImovelRepository.save(imagem));
+    }
+
+    public ImagemImovelResponse definirImagemComoCapa(Long imovelId, Long imagemId) {
+        buscarPorId(imovelId);
+        ImagemImovel imagem = buscarImagemDoImovel(imovelId, imagemId);
+
+        removerCapaDasImagens(imovelId);
+        imagem.setCapa(true);
+
         return ImagemImovelResponse.fromEntity(imagemImovelRepository.save(imagem));
     }
 
@@ -109,6 +123,17 @@ public class ImovelService {
     private Imovel buscarPorId(Long id) {
         return imovelRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Imovel nao encontrado"));
+    }
+
+    private ImagemImovel buscarImagemDoImovel(Long imovelId, Long imagemId) {
+        return imagemImovelRepository.findByIdAndImovelId(imagemId, imovelId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Imagem do imovel nao encontrada"));
+    }
+
+    private void removerCapaDasImagens(Long imovelId) {
+        List<ImagemImovel> imagens = imagemImovelRepository.findByImovelIdOrderByOrdemAsc(imovelId);
+        imagens.forEach(imagem -> imagem.setCapa(false));
+        imagemImovelRepository.saveAll(imagens);
     }
 
     private void preencherDados(Imovel imovel, ImovelRequest request) {

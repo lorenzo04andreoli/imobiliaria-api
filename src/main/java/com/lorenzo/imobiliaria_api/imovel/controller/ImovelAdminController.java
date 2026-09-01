@@ -57,6 +57,14 @@ public class ImovelAdminController {
         return imovelService.adicionarImagem(id, request);
     }
 
+    @PatchMapping("/{id}/imagens/{imagemId}/capa")
+    public ImagemImovelResponse definirImagemComoCapa(
+            @PathVariable Long id,
+            @PathVariable Long imagemId
+    ) {
+        return imovelService.definirImagemComoCapa(id, imagemId);
+    }
+
     @PutMapping("/{id}")
     public ImovelResponse atualizar(@PathVariable Long id, @RequestBody @Valid ImovelRequest request) {
         return imovelService.atualizar(id, request);
