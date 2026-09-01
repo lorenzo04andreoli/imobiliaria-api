@@ -45,6 +45,13 @@ public class ImovelService {
         return ImovelResponse.fromEntity(imovelRepository.save(imovel));
     }
 
+    public ImovelResponse inativar(Long id) {
+        Imovel imovel = buscarPorId(id);
+        imovel.setStatus(StatusImovel.INATIVO);
+
+        return ImovelResponse.fromEntity(imovelRepository.save(imovel));
+    }
+
     private Imovel buscarPorId(Long id) {
         return imovelRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Imovel nao encontrado"));

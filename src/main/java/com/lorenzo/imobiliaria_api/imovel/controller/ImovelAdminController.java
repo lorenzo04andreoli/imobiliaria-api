@@ -6,6 +6,7 @@ import com.lorenzo.imobiliaria_api.imovel.service.ImovelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -30,5 +31,10 @@ public class ImovelAdminController {
     @PutMapping("/{id}")
     public ImovelResponse atualizar(@PathVariable Long id, @RequestBody @Valid ImovelRequest request) {
         return imovelService.atualizar(id, request);
+    }
+
+    @PatchMapping("/{id}/inativar")
+    public ImovelResponse inativar(@PathVariable Long id) {
+        return imovelService.inativar(id);
     }
 }
