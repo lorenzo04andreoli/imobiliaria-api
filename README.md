@@ -128,6 +128,28 @@ $env:JWT_SECRET="troque-por-uma-chave-grande-com-mais-de-32-caracteres"
 
 Nao deixe senha real commitada no repositorio.
 
+## Dados de Exemplo
+
+O projeto possui uma carga inicial opcional para ambiente local. Ela cria imoveis demonstrativos com imagens por URL quando o banco ainda nao possui nenhum imovel.
+
+Para ativar:
+
+```powershell
+$env:APP_SEED_ENABLED="true"
+```
+
+Ou no arquivo `.env`:
+
+```env
+APP_SEED_ENABLED=true
+```
+
+Por padrao, a carga inicial fica desativada:
+
+```properties
+app.seed.enabled=${APP_SEED_ENABLED:false}
+```
+
 ## Executar Localmente
 
 Na raiz do projeto:
