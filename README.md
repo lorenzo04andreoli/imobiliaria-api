@@ -40,7 +40,7 @@ src/main/resources/application.properties
 Configuracao atual do banco:
 
 ```properties
-spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=America/Sao_Paulo}
+spring.datasource.url=${DB_URL:jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo}
 spring.datasource.username=${DB_USERNAME:root}
 spring.datasource.password=${DB_PASSWORD:}
 ```
@@ -72,7 +72,7 @@ MYSQL_USER=imobiliaria_user
 MYSQL_PASSWORD=troque-a-senha-do-banco
 MYSQL_PORT=3306
 
-DB_URL=jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=America/Sao_Paulo
+DB_URL=jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
 DB_USERNAME=imobiliaria_user
 DB_PASSWORD=troque-a-senha-do-banco
 
