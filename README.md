@@ -1,0 +1,233 @@
+# Imobiliaria API
+
+API REST para catalogo de imoveis e painel administrativo de uma corretora.
+
+O projeto faz parte de uma aplicacao full stack composta por:
+
+- site publico em HTML, CSS e JavaScript;
+- painel administrativo em Angular;
+- backend em Java com Spring Boot;
+- banco de dados MySQL.
+
+## Tecnologias
+
+- Java 17
+- Spring Boot 4.1.1
+- Spring Web MVC
+- Spring Data JPA
+- Spring Security
+- JWT
+- MySQL
+- Lombok
+- Swagger/OpenAPI
+
+## Requisitos
+
+- JDK 17 ou superior
+- MySQL instalado e em execucao
+- Git
+
+Nao e necessario instalar Maven globalmente, pois o projeto usa Maven Wrapper.
+
+## Configuracao
+
+O arquivo principal de configuracao fica em:
+
+```txt
+src/main/resources/application.properties
+```
+
+Configuracao atual do banco:
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=America/Sao_Paulo
+spring.datasource.username=root
+spring.datasource.password=
+```
+
+Se o seu MySQL tiver senha, preencha:
+
+```properties
+spring.datasource.password=sua-senha
+```
+
+O banco `imobiliaria_db` pode ser criado automaticamente por causa do parametro `createDatabaseIfNotExist=true`. Se preferir criar manualmente:
+
+```sql
+CREATE DATABASE imobiliaria_db;
+```
+
+## Variaveis Sensiveis
+
+O JWT usa uma chave secreta configurada por ambiente:
+
+```properties
+app.jwt.secret=${JWT_SECRET:}
+```
+
+Defina `JWT_SECRET` antes de rodar a aplicacao. Use uma chave longa, com pelo menos 32 caracteres.
+
+Exemplo no PowerShell:
+
+```powershell
+$env:JWT_SECRET="troque-por-uma-chave-grande-com-mais-de-32-caracteres"
+```
+
+## Usuario Administrador Inicial
+
+O projeto possui um inicializador opcional de usuario administrador.
+
+Ele so cria o admin se estas propriedades forem informadas:
+
+```properties
+app.admin.nome=
+app.admin.email=
+app.admin.senha=
+```
+
+Exemplo no PowerShell:
+
+```powershell
+$env:JWT_SECRET="troque-por-uma-chave-grande-com-mais-de-32-caracteres"
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--app.admin.nome=Administrador --app.admin.email=admin@seudominio.com --app.admin.senha=sua-senha-segura"
+```
+
+Nao deixe senha real commitada no repositorio.
+
+## Executar Localmente
+
+Na raiz do projeto:
+
+```powershell
+.\mvnw.cmd spring-boot:run
+```
+
+Por padrao, a API sobe em:
+
+```txt
+http://localhost:8080
+```
+
+## Build
+
+```powershell
+.\mvnw.cmd -DskipTests package
+```
+
+O arquivo `.jar` sera gerado em:
+
+```txt
+target/imobiliaria-api-0.0.1-SNAPSHOT.jar
+```
+
+## Swagger
+
+Com a aplicacao rodando, acesse:
+
+```txt
+http://localhost:8080/swagger-ui.html
+```
+
+O documento OpenAPI em JSON fica em:
+
+```txt
+http://localhost:8080/v3/api-docs
+```
+
+## Autenticacao
+
+Login:
+
+```http
+POST /api/auth/login
+```
+
+Body:
+
+```json
+{
+  "email": "admin@seudominio.com",
+  "senha": "sua-senha"
+}
+```
+
+Resposta:
+
+```json
+{
+  "id": 1,
+  "nome": "Administrador",
+  "email": "admin@seudominio.com",
+  "role": "ADMIN",
+  "token": "jwt",
+  "tokenType": "Bearer",
+  "expiresIn": 7200
+}
+```
+
+Para acessar endpoints administrativos, envie o token:
+
+```http
+Authorization: Bearer seu-token
+```
+
+## Endpoints Publicos
+
+```http
+GET /api/imoveis
+GET /api/imoveis/{id}
+```
+
+Os endpoints publicos retornam apenas imoveis com status `PUBLICADO`.
+
+## Endpoints Administrativos
+
+```http
+GET    /api/admin/imoveis
+GET    /api/admin/imoveis/{id}
+POST   /api/admin/imoveis
+PUT    /api/admin/imoveis/{id}
+PATCH  /api/admin/imoveis/{id}/publicar
+PATCH  /api/admin/imoveis/{id}/vender
+PATCH  /api/admin/imoveis/{id}/rascunho
+PATCH  /api/admin/imoveis/{id}/inativar
+GET    /api/admin/imoveis/{id}/imagens
+POST   /api/admin/imoveis/{id}/imagens
+PATCH  /api/admin/imoveis/{id}/imagens/{imagemId}/capa
+```
+
+## Status de Imovel
+
+- `RASCUNHO`: cadastrado, mas ainda nao aparece no site publico.
+- `PUBLICADO`: aparece no site publico.
+- `VENDIDO`: marcado como vendido.
+- `INATIVO`: removido do site publico sem apagar do banco.
+
+## Tipos de Imovel
+
+- `CASA`
+- `APARTAMENTO`
+- `TERRENO`
+- `COMERCIAL`
+- `CHACARA`
+- `OUTRO`
+
+## CORS
+
+Origens locais liberadas atualmente:
+
+```properties
+app.cors.allowed-origins=http://localhost:4200,http://localhost:5500,http://127.0.0.1:5500
+```
+
+Antes do deploy, substitua ou complemente essa lista com o dominio real do frontend.
+
+## Commits
+
+Este projeto usa commits pequenos no padrao Conventional Commits:
+
+```txt
+feat(imoveis): adiciona cadastro administrativo
+fix(security): libera cors para frontends locais
+docs(api): adiciona swagger openapi
+```
