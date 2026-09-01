@@ -66,11 +66,11 @@ Crie um arquivo `.env` na raiz do projeto usando `.env.example` como referencia.
 Exemplo de variaveis:
 
 ```env
-MYSQL_ROOT_PASSWORD=troque-a-senha-root
-MYSQL_DATABASE=imobiliaria_db
-MYSQL_USER=imobiliaria_user
-MYSQL_PASSWORD=troque-a-senha-do-banco
-MYSQL_PORT=3306
+IMOBILIARIA_MYSQL_ROOT_PASSWORD=troque-a-senha-root
+IMOBILIARIA_MYSQL_DATABASE=imobiliaria_db
+IMOBILIARIA_MYSQL_USER=imobiliaria_user
+IMOBILIARIA_MYSQL_PASSWORD=troque-a-senha-do-banco
+IMOBILIARIA_MYSQL_PORT=3306
 
 DB_URL=jdbc:mysql://localhost:3306/imobiliaria_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
 DB_USERNAME=imobiliaria_user
@@ -78,6 +78,8 @@ DB_PASSWORD=troque-a-senha-do-banco
 
 JWT_SECRET=troque-por-uma-chave-grande-com-mais-de-32-caracteres
 ```
+
+As variaveis do Docker Compose usam o prefixo `IMOBILIARIA_` para evitar conflito com variaveis globais do sistema.
 
 Subir o banco:
 
