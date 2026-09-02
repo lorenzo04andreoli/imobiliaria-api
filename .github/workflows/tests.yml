@@ -8,10 +8,14 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Maven Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -23,6 +27,12 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
+
+      - name: Check Docker
+        run: docker info
+
+      - name: Ensure Maven wrapper is executable
+        run: chmod +x ./mvnw
 
       - name: Run tests
         run: ./mvnw test
