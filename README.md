@@ -102,6 +102,12 @@ Rodar em desenvolvimento:
 .\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=dev"
 ```
 
+Rodar em desenvolvimento com DevTools:
+
+```powershell
+.\mvnw.cmd -Plocal-devtools spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=dev"
+```
+
 Rodar em producao:
 
 ```powershell
