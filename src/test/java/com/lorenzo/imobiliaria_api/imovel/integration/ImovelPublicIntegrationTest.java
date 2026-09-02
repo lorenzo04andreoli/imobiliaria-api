@@ -32,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         "app.jwt.secret=integration-test-secret-with-more-than-32-characters",
         "debug=false",
         "logging.level.root=INFO",
+        "logging.level.com.lorenzo.imobiliaria_api=INFO",
         "spring.jpa.show-sql=false"
 })
 @AutoConfigureMockMvc

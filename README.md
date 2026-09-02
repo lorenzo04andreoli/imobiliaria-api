@@ -84,6 +84,8 @@ Perfil `dev`:
 spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
+logging.level.root=INFO
+logging.level.com.lorenzo.imobiliaria_api=DEBUG
 app.seed.enabled=${APP_SEED_ENABLED:false}
 ```
 
@@ -93,6 +95,10 @@ Perfil `prod`:
 spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=false
 spring.jpa.properties.hibernate.format_sql=false
+logging.level.root=INFO
+logging.level.com.lorenzo.imobiliaria_api=INFO
+logging.level.org.hibernate.SQL=OFF
+logging.level.org.hibernate.orm.jdbc.bind=OFF
 app.seed.enabled=false
 ```
 
