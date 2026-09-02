@@ -23,6 +23,7 @@ public class ImovelPublicController {
 
     @GetMapping
     public PaginaResponse<ImovelResponse> listar(
+            @RequestParam(required = false) String q,
             @RequestParam(required = false) String cidade,
             @RequestParam(required = false) String bairro,
             @RequestParam(required = false) TipoImovel tipo,
@@ -37,6 +38,7 @@ public class ImovelPublicController {
             @RequestParam(defaultValue = "desc") String direction
     ) {
         ImovelFiltroRequest filtro = new ImovelFiltroRequest(
+                q,
                 cidade,
                 bairro,
                 tipo,

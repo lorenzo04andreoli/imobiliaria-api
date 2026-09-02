@@ -59,6 +59,7 @@ class ImovelPublicControllerTest {
         )).thenReturn(response);
 
         mockMvc.perform(get("/api/imoveis")
+                        .param("q", "quintal")
                         .param("cidade", "Presidente Prudente")
                         .param("bairro", "Centro")
                         .param("tipo", "CASA")
@@ -85,6 +86,7 @@ class ImovelPublicControllerTest {
         verify(imovelService).listarPublicados(filtroCaptor.capture(), eq(1), eq(6), eq("preco"), eq("asc"));
 
         ImovelFiltroRequest filtro = filtroCaptor.getValue();
+        assertThat(filtro.q()).isEqualTo("quintal");
         assertThat(filtro.cidade()).isEqualTo("Presidente Prudente");
         assertThat(filtro.bairro()).isEqualTo("Centro");
         assertThat(filtro.tipo()).isEqualTo(TipoImovel.CASA);

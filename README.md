@@ -249,11 +249,12 @@ Os endpoints publicos retornam apenas imoveis com status `PUBLICADO`.
 A listagem publica aceita filtros por query string:
 
 ```http
-GET /api/imoveis?cidade=Presidente Prudente&tipo=CASA&precoMin=300000&precoMax=700000&quartosMin=2
+GET /api/imoveis?q=quintal&cidade=Presidente Prudente&tipo=CASA&precoMin=300000&precoMax=700000&quartosMin=2
 ```
 
 Filtros disponiveis:
 
+- `q`: busca em titulo, descricao, cidade e bairro
 - `cidade`
 - `bairro`
 - `tipo`

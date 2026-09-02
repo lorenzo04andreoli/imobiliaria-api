@@ -41,6 +41,7 @@ class ImovelServiceTest {
     void deveConsultarPublicadosComParametrosValidos() {
         when(imovelRepository.buscarPublicadosComFiltros(
                 eq(StatusImovel.PUBLICADO),
+                eq("quintal"),
                 eq("Presidente Prudente"),
                 eq("Centro"),
                 eq(TipoImovel.CASA),
@@ -54,6 +55,7 @@ class ImovelServiceTest {
 
         imovelService.listarPublicados(
                 new ImovelFiltroRequest(
+                        " quintal ",
                         " Presidente Prudente ",
                         " Centro ",
                         TipoImovel.CASA,
@@ -72,6 +74,7 @@ class ImovelServiceTest {
         ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
         verify(imovelRepository).buscarPublicadosComFiltros(
                 eq(StatusImovel.PUBLICADO),
+                eq("quintal"),
                 eq("Presidente Prudente"),
                 eq("Centro"),
                 eq(TipoImovel.CASA),
@@ -128,6 +131,7 @@ class ImovelServiceTest {
                 null,
                 null,
                 null,
+                null,
                 new BigDecimal("700000"),
                 new BigDecimal("300000"),
                 null,
@@ -142,7 +146,7 @@ class ImovelServiceTest {
     }
 
     private ImovelFiltroRequest filtroValido() {
-        return new ImovelFiltroRequest(null, null, null, null, null, null, null, null);
+        return new ImovelFiltroRequest(null, null, null, null, null, null, null, null, null);
     }
 
     private Imovel imovel() {

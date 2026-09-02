@@ -5,6 +5,7 @@ import com.lorenzo.imobiliaria_api.imovel.TipoImovel;
 import java.math.BigDecimal;
 
 public record ImovelFiltroRequest(
+        String q,
         String cidade,
         String bairro,
         TipoImovel tipo,

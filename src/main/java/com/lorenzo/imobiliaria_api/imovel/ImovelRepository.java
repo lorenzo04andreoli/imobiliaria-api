@@ -24,6 +24,10 @@ public interface ImovelRepository extends JpaRepository<Imovel, Long> {
             select i
             from Imovel i
             where i.status = :status
+              and (:q is null or lower(i.titulo) like lower(concat('%', :q, '%'))
+                   or lower(i.descricao) like lower(concat('%', :q, '%'))
+                   or lower(i.cidade) like lower(concat('%', :q, '%'))
+                   or lower(i.bairro) like lower(concat('%', :q, '%')))
               and (:cidade is null or lower(i.cidade) like lower(concat('%', :cidade, '%')))
               and (:bairro is null or lower(i.bairro) like lower(concat('%', :bairro, '%')))
               and (:tipo is null or i.tipo = :tipo)
@@ -35,6 +39,7 @@ public interface ImovelRepository extends JpaRepository<Imovel, Long> {
             """)
     Page<Imovel> buscarPublicadosComFiltros(
             @Param("status") StatusImovel status,
+            @Param("q") String q,
             @Param("cidade") String cidade,
             @Param("bairro") String bairro,
             @Param("tipo") TipoImovel tipo,

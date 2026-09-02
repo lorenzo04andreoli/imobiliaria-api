@@ -64,6 +64,7 @@ public class ImovelService {
         return PaginaResponse.fromPage(
                 imovelRepository.buscarPublicadosComFiltros(
                         StatusImovel.PUBLICADO,
+                        limparTexto(filtro.q()),
                         limparTexto(filtro.cidade()),
                         limparTexto(filtro.bairro()),
                         filtro.tipo(),
