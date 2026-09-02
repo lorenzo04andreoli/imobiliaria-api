@@ -70,8 +70,8 @@ class ImovelPublicIntegrationTest {
     }
 
     @Test
-    void deveAplicarMigrationInicialComFlyway() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("1");
+    void deveAplicarMigrationsComFlyway() {
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("2");
     }
 
     @Test
