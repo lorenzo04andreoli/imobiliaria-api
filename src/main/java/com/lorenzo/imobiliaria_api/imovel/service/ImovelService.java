@@ -21,6 +21,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,8 +62,7 @@ public class ImovelService {
                 criarOrdenacao(normalizarTexto(sort), normalizarTexto(direction))
         );
 
-        return PaginaResponse.fromPage(
-                imovelRepository.buscarPublicadosComFiltros(
+        var imoveis = imovelRepository.buscarPublicadosComFiltros(
                         StatusImovel.PUBLICADO,
                         limparTexto(filtro.q()),
                         limparTexto(filtro.cidade()),
@@ -74,8 +74,13 @@ public class ImovelService {
                         filtro.banheirosMin(),
                         filtro.vagasMin(),
                         pageable
-                ),
-                ImovelResponse::fromEntity
+                );
+
+        Map<Long, List<ImagemImovel>> imagensPorImovel = buscarImagensPorImovel(imoveis.getContent());
+
+        return PaginaResponse.fromPage(
+                imoveis,
+                imovel -> ImovelResponse.fromEntity(imovel, imagensPorImovel.getOrDefault(imovel.getId(), List.of()))
         );
     }
 
@@ -202,6 +207,20 @@ public class ImovelService {
 
     private String limparTexto(String valor) {
         return StringUtils.hasText(valor) ? valor.trim() : null;
+    }
+
+    private Map<Long, List<ImagemImovel>> buscarImagensPorImovel(List<Imovel> imoveis) {
+        List<Long> ids = imoveis.stream()
+                .map(Imovel::getId)
+                .toList();
+
+        if (ids.isEmpty()) {
+            return Map.of();
+        }
+
+        return imagemImovelRepository.findByImovelIdInOrderByImovelIdAscOrdemAsc(ids)
+                .stream()
+                .collect(Collectors.groupingBy(imagem -> imagem.getImovel().getId()));
     }
 
     private Sort criarOrdenacao(String sort, String direction) {

@@ -1,6 +1,7 @@
 package com.lorenzo.imobiliaria_api.imovel.dto;
 
 import com.lorenzo.imobiliaria_api.imovel.Imovel;
+import com.lorenzo.imobiliaria_api.imovel.ImagemImovel;
 import com.lorenzo.imobiliaria_api.imovel.StatusImovel;
 import com.lorenzo.imobiliaria_api.imovel.TipoImovel;
 
@@ -28,6 +29,10 @@ public record ImovelResponse(
 ) {
 
     public static ImovelResponse fromEntity(Imovel imovel) {
+        return fromEntity(imovel, imovel.getImagens());
+    }
+
+    public static ImovelResponse fromEntity(Imovel imovel, List<ImagemImovel> imagens) {
         return new ImovelResponse(
                 imovel.getId(),
                 imovel.getTitulo(),
@@ -42,7 +47,7 @@ public record ImovelResponse(
                 imovel.getVagas(),
                 imovel.getArea(),
                 imovel.getStatus(),
-                imovel.getImagens()
+                imagens
                         .stream()
                         .map(ImagemImovelResponse::fromEntity)
                         .toList(),

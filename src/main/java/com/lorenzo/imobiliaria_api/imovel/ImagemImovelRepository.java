@@ -9,6 +9,8 @@ public interface ImagemImovelRepository extends JpaRepository<ImagemImovel, Long
 
     List<ImagemImovel> findByImovelIdOrderByOrdemAsc(Long imovelId);
 
+    List<ImagemImovel> findByImovelIdInOrderByImovelIdAscOrdemAsc(List<Long> imovelIds);
+
     Optional<ImagemImovel> findByIdAndImovelId(Long id, Long imovelId);
 
     long countByImovelId(Long imovelId);
