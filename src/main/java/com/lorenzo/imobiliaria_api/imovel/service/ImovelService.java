@@ -53,10 +53,12 @@ public class ImovelService {
             String sort,
             String direction
     ) {
+        validarConsultaPublica(filtro, page, size, sort, direction);
+
         PageRequest pageable = PageRequest.of(
-                Math.max(page, 0),
-                limitarTamanhoPagina(size),
-                criarOrdenacao(sort, direction)
+                page,
+                size,
+                criarOrdenacao(normalizarTexto(sort), normalizarTexto(direction))
         );
 
         return PaginaResponse.fromPage(
@@ -201,16 +203,53 @@ public class ImovelService {
         return StringUtils.hasText(valor) ? valor.trim() : null;
     }
 
-    private int limitarTamanhoPagina(int size) {
-        return Math.max(1, Math.min(size, TAMANHO_MAXIMO_PAGINA));
-    }
-
     private Sort criarOrdenacao(String sort, String direction) {
-        String campo = CAMPOS_ORDENACAO_PUBLICA.getOrDefault(sort, "criadoEm");
+        String campo = CAMPOS_ORDENACAO_PUBLICA.get(sort);
         Sort.Direction direcao = "asc".equalsIgnoreCase(direction)
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
         return Sort.by(direcao, campo);
+    }
+
+    private void validarConsultaPublica(
+            ImovelFiltroRequest filtro,
+            int page,
+            int size,
+            String sort,
+            String direction
+    ) {
+        String sortNormalizado = normalizarTexto(sort);
+        String direcaoNormalizada = normalizarTexto(direction);
+
+        if (page < 0) {
+            throw badRequest("O parametro page deve ser maior ou igual a 0");
+        }
+
+        if (size < 1 || size > TAMANHO_MAXIMO_PAGINA) {
+            throw badRequest("O parametro size deve estar entre 1 e 50");
+        }
+
+        if (!CAMPOS_ORDENACAO_PUBLICA.containsKey(sortNormalizado)) {
+            throw badRequest("O parametro sort deve ser um campo permitido");
+        }
+
+        if (!"asc".equalsIgnoreCase(direcaoNormalizada) && !"desc".equalsIgnoreCase(direcaoNormalizada)) {
+            throw badRequest("O parametro direction deve ser asc ou desc");
+        }
+
+        if (filtro.precoMin() != null
+                && filtro.precoMax() != null
+                && filtro.precoMin().compareTo(filtro.precoMax()) > 0) {
+            throw badRequest("O parametro precoMin deve ser menor ou igual a precoMax");
+        }
+    }
+
+    private ResponseStatusException badRequest(String mensagem) {
+        return new ResponseStatusException(HttpStatus.BAD_REQUEST, mensagem);
+    }
+
+    private String normalizarTexto(String valor) {
+        return valor != null ? valor.trim() : null;
     }
 }

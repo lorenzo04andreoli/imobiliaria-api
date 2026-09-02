@@ -289,6 +289,14 @@ Direcoes disponiveis:
 - `asc`
 - `desc`
 
+Regras dos parametros:
+
+- `page` deve ser maior ou igual a `0`.
+- `size` deve estar entre `1` e `50`.
+- `precoMin` deve ser menor ou igual a `precoMax`.
+- `sort` deve ser um dos campos permitidos.
+- `direction` deve ser `asc` ou `desc`.
+
 Resposta da listagem publica:
 
 ```json
