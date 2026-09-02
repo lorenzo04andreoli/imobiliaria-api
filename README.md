@@ -343,7 +343,7 @@ Os testes cobrem o contrato dos endpoints publicos de imoveis, do login administ
 
 ## Swagger
 
-Com a aplicacao rodando, acesse:
+No perfil `dev`, com a aplicacao rodando, acesse:
 
 ```txt
 http://localhost:8080/swagger-ui.html
@@ -354,6 +354,8 @@ O documento OpenAPI em JSON fica em:
 ```txt
 http://localhost:8080/v3/api-docs
 ```
+
+No perfil `prod`, Swagger UI e OpenAPI JSON ficam desabilitados.
 
 ## Autenticacao
 
