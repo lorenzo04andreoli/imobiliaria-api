@@ -18,6 +18,7 @@ O projeto faz parte de uma aplicacao full stack composta por:
 - Spring Security
 - JWT
 - MySQL
+- Flyway
 - Lombok
 - Swagger/OpenAPI
 
@@ -71,10 +72,16 @@ src/main/resources/application-prod.properties
 
 O arquivo `application.properties` concentra as configuracoes comuns. Os arquivos `dev` e `prod` ajustam comportamento de banco, logs SQL e carga inicial.
 
+As tabelas do banco sao versionadas pelo Flyway em:
+
+```txt
+src/main/resources/db/migration
+```
+
 Perfil `dev`:
 
 ```properties
-spring.jpa.hibernate.ddl-auto=update
+spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.show-sql=true
 spring.jpa.properties.hibernate.format_sql=true
 app.seed.enabled=${APP_SEED_ENABLED:false}
@@ -113,6 +120,8 @@ APP_UPLOAD_IMOVEIS_DIR=/caminho/persistente/uploads/imoveis
 ```
 
 O perfil `prod` usa `ddl-auto=validate`, entao o banco precisa estar com as tabelas criadas antes da aplicacao subir.
+
+Em bancos novos, o Flyway executa as migrations automaticamente ao iniciar a aplicacao. Em bancos que ja tinham tabelas antes da adocao do Flyway, `spring.flyway.baseline-on-migrate=true` cria uma linha inicial de controle sem apagar dados.
 
 ## MySQL com Docker Compose
 
