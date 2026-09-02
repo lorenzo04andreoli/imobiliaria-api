@@ -303,6 +303,36 @@ docker run --rm -p 8080:8080 `
 
 O volume em `/app/uploads` preserva as imagens enviadas mesmo se o container for recriado.
 
+## Docker Compose de Producao
+
+O arquivo `docker-compose.prod.yml` sobe a API e o MySQL juntos.
+
+Crie um arquivo `.env.prod` usando `.env.prod.example` como referencia:
+
+```powershell
+Copy-Item .env.prod.example .env.prod
+```
+
+Suba os containers:
+
+```powershell
+docker compose -p imobiliaria-api-prod --env-file .env.prod -f docker-compose.prod.yml up -d --build
+```
+
+Acompanhe os logs:
+
+```powershell
+docker compose -p imobiliaria-api-prod --env-file .env.prod -f docker-compose.prod.yml logs -f api-prod
+```
+
+Pare os containers:
+
+```powershell
+docker compose -p imobiliaria-api-prod --env-file .env.prod -f docker-compose.prod.yml down
+```
+
+Use `down -v` apenas quando quiser apagar tambem os volumes do banco e dos uploads.
+
 ## Testes
 
 Os testes cobrem o contrato dos endpoints publicos de imoveis, do login administrativo e das rotas administrativas de imoveis.

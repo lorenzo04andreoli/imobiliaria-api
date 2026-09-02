@@ -1,0 +1,43 @@
+services:
+  mysql-prod:
+    image: mysql:8.4
+    container_name: imobiliaria-mysql-prod
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${IMOBILIARIA_MYSQL_ROOT_PASSWORD:?IMOBILIARIA_MYSQL_ROOT_PASSWORD nao configurado}
+      MYSQL_DATABASE: ${IMOBILIARIA_MYSQL_DATABASE:-imobiliaria_db}
+      MYSQL_USER: ${IMOBILIARIA_MYSQL_USER:-imobiliaria_user}
+      MYSQL_PASSWORD: ${IMOBILIARIA_MYSQL_PASSWORD:?IMOBILIARIA_MYSQL_PASSWORD nao configurado}
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api-prod:
+    build:
+      context: .
+    image: imobiliaria-api:latest
+    container_name: imobiliaria-api-prod
+    restart: unless-stopped
+    depends_on:
+      mysql-prod:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:mysql://mysql-prod:3306/${IMOBILIARIA_MYSQL_DATABASE:-imobiliaria_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo
+      DB_USERNAME: ${IMOBILIARIA_MYSQL_USER:-imobiliaria_user}
+      DB_PASSWORD: ${IMOBILIARIA_MYSQL_PASSWORD:?IMOBILIARIA_MYSQL_PASSWORD nao configurado}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET nao configurado}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:?APP_CORS_ALLOWED_ORIGINS nao configurado}
+      APP_UPLOAD_IMOVEIS_DIR: /app/uploads/imoveis
+    volumes:
+      - api_uploads:/app/uploads
+
+volumes:
+  mysql_prod_data:
+  api_uploads:

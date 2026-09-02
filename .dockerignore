@@ -4,5 +4,6 @@
 target
 uploads
 .env
+.env.prod
 *.log
 *.iml
