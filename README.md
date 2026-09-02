@@ -45,6 +45,8 @@ spring.datasource.username=${DB_USERNAME:root}
 spring.datasource.password=${DB_PASSWORD:}
 ```
 
+Por padrao, quando nenhum perfil e informado, a aplicacao usa o perfil `dev`.
+
 Se o seu MySQL tiver senha, defina pelo ambiente:
 
 ```powershell
@@ -56,6 +58,61 @@ O banco `imobiliaria_db` pode ser criado automaticamente por causa do parametro 
 ```sql
 CREATE DATABASE imobiliaria_db;
 ```
+
+## Perfis de Ambiente
+
+O projeto possui configuracoes separadas por perfil:
+
+```txt
+src/main/resources/application.properties
+src/main/resources/application-dev.properties
+src/main/resources/application-prod.properties
+```
+
+O arquivo `application.properties` concentra as configuracoes comuns. Os arquivos `dev` e `prod` ajustam comportamento de banco, logs SQL e carga inicial.
+
+Perfil `dev`:
+
+```properties
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+app.seed.enabled=${APP_SEED_ENABLED:false}
+```
+
+Perfil `prod`:
+
+```properties
+spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.show-sql=false
+spring.jpa.properties.hibernate.format_sql=false
+app.seed.enabled=false
+```
+
+Rodar em desenvolvimento:
+
+```powershell
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=dev"
+```
+
+Rodar em producao:
+
+```powershell
+.\mvnw.cmd spring-boot:run "-Dspring-boot.run.arguments=--spring.profiles.active=prod"
+```
+
+Em producao, defina as variaveis sensiveis no ambiente:
+
+```env
+DB_URL=jdbc:mysql://host:3306/imobiliaria_db
+DB_USERNAME=usuario
+DB_PASSWORD=senha
+JWT_SECRET=chave-grande-com-mais-de-32-caracteres
+APP_CORS_ALLOWED_ORIGINS=https://seudominio.com
+APP_UPLOAD_IMOVEIS_DIR=/caminho/persistente/uploads/imoveis
+```
+
+O perfil `prod` usa `ddl-auto=validate`, entao o banco precisa estar com as tabelas criadas antes da aplicacao subir.
 
 ## MySQL com Docker Compose
 
@@ -77,6 +134,8 @@ DB_USERNAME=imobiliaria_user
 DB_PASSWORD=troque-a-senha-do-banco
 
 JWT_SECRET=troque-por-uma-chave-grande-com-mais-de-32-caracteres
+APP_CORS_ALLOWED_ORIGINS=http://localhost:4200,http://localhost:5500,http://127.0.0.1:5500
+APP_UPLOAD_IMOVEIS_DIR=uploads/imoveis
 ```
 
 As variaveis do Docker Compose usam o prefixo `IMOBILIARIA_` para evitar conflito com variaveis globais do sistema.
@@ -196,6 +255,8 @@ Por padrao, a API sobe em:
 ```txt
 http://localhost:8080
 ```
+
+Como o perfil padrao e `dev`, o comando acima usa as configuracoes de desenvolvimento.
 
 ## Build
 
@@ -467,7 +528,7 @@ Se a imagem removida for local, o arquivo fisico tambem sera removido. Se ela fo
 Origens locais liberadas atualmente:
 
 ```properties
-app.cors.allowed-origins=http://localhost:4200,http://localhost:5500,http://127.0.0.1:5500
+app.cors.allowed-origins=${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:5500,http://127.0.0.1:5500}
 ```
 
 Antes do deploy, substitua ou complemente essa lista com o dominio real do frontend.
