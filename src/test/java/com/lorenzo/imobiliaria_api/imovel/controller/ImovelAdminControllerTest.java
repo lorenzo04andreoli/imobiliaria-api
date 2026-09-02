@@ -3,6 +3,7 @@ package com.lorenzo.imobiliaria_api.imovel.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lorenzo.imobiliaria_api.imovel.StatusImovel;
 import com.lorenzo.imobiliaria_api.imovel.TipoImovel;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelOrdemRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
@@ -163,6 +164,36 @@ class ImovelAdminControllerTest {
         verify(imovelService).listarImagens(10L);
         verify(imovelService).adicionarImagem(eq(10L), any(ImagemImovelRequest.class));
         verify(imovelService).definirImagemComoCapa(10L, 7L);
+    }
+
+    @Test
+    void deveReordenarImagensDoImovel() throws Exception {
+        ImagemImovelResponse primeira = new ImagemImovelResponse(
+                8L,
+                "https://example.com/sala.jpg",
+                0,
+                false
+        );
+        ImagemImovelResponse segunda = new ImagemImovelResponse(
+                7L,
+                "https://example.com/imovel.jpg",
+                1,
+                true
+        );
+
+        when(imovelService.reordenarImagens(eq(10L), any(ImagemImovelOrdemRequest.class)))
+                .thenReturn(List.of(primeira, segunda));
+
+        mockMvc.perform(put("/api/admin/imoveis/10/imagens/ordem")
+                        .contentType(APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(new ImagemImovelOrdemRequest(List.of(8L, 7L)))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(8))
+                .andExpect(jsonPath("$[0].ordem").value(0))
+                .andExpect(jsonPath("$[1].id").value(7))
+                .andExpect(jsonPath("$[1].ordem").value(1));
+
+        verify(imovelService).reordenarImagens(eq(10L), any(ImagemImovelOrdemRequest.class));
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.lorenzo.imobiliaria_api.imovel.ImagemImovel;
 import com.lorenzo.imobiliaria_api.imovel.ImagemImovelRepository;
 import com.lorenzo.imobiliaria_api.imovel.StatusImovel;
 import com.lorenzo.imobiliaria_api.imovel.TipoImovel;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelOrdemRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelFiltroRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.PaginaResponse;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
@@ -254,6 +255,49 @@ class ImovelServiceTest {
         verify(imovelRepository).findById(10L);
         verify(imagemImovelRepository).delete(imagemRemovida);
         verify(imagemImovelRepository).save(novaCapa);
+    }
+
+    @Test
+    void deveReordenarImagensDoImovel() {
+        Imovel imovel = imovel();
+        ImagemImovel primeira = imagem(imovel);
+        primeira.setId(7L);
+        primeira.setOrdem(0);
+
+        ImagemImovel segunda = imagem(imovel);
+        segunda.setId(8L);
+        segunda.setUrl("https://example.com/sala.jpg");
+        segunda.setOrdem(1);
+
+        when(imovelRepository.findById(10L)).thenReturn(Optional.of(imovel));
+        when(imagemImovelRepository.findByImovelIdOrderByOrdemAsc(10L))
+                .thenReturn(List.of(primeira, segunda));
+        when(imagemImovelRepository.saveAll(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = imovelService.reordenarImagens(
+                10L,
+                new ImagemImovelOrdemRequest(List.of(8L, 7L))
+        );
+
+        assertThat(response).hasSize(2);
+        assertThat(response.get(0).id()).isEqualTo(8L);
+        assertThat(response.get(0).ordem()).isZero();
+        assertThat(response.get(1).id()).isEqualTo(7L);
+        assertThat(response.get(1).ordem()).isEqualTo(1);
+        assertThat(segunda.getOrdem()).isZero();
+        assertThat(primeira.getOrdem()).isEqualTo(1);
+        verify(imagemImovelRepository).saveAll(List.of(primeira, segunda));
+    }
+
+    @Test
+    void deveValidarIdsRepetidosNaReordenacao() {
+        when(imovelRepository.findById(10L)).thenReturn(Optional.of(imovel()));
+
+        assertBadRequest(
+                () -> imovelService.reordenarImagens(10L, new ImagemImovelOrdemRequest(List.of(7L, 7L))),
+                "A lista de imagens nao pode conter IDs repetidos"
+        );
     }
 
     private ImovelFiltroRequest filtroValido() {

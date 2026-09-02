@@ -5,6 +5,7 @@ import com.lorenzo.imobiliaria_api.imovel.ImovelRepository;
 import com.lorenzo.imobiliaria_api.imovel.ImagemImovel;
 import com.lorenzo.imobiliaria_api.imovel.ImagemImovelRepository;
 import com.lorenzo.imobiliaria_api.imovel.StatusImovel;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelOrdemRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelFiltroRequest;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -207,6 +209,36 @@ public class ImovelService {
         return ImagemImovelResponse.fromEntity(imagemImovelRepository.save(imagem));
     }
 
+    public List<ImagemImovelResponse> reordenarImagens(Long imovelId, ImagemImovelOrdemRequest request) {
+        buscarPorId(imovelId);
+        validarIdsReordenacao(request.imagemIds());
+
+        List<ImagemImovel> imagens = imagemImovelRepository.findByImovelIdOrderByOrdemAsc(imovelId);
+        Map<Long, ImagemImovel> imagensPorId = imagens.stream()
+                .collect(Collectors.toMap(ImagemImovel::getId, imagem -> imagem));
+
+        if (request.imagemIds().size() != imagens.size()) {
+            throw badRequest("Informe todos os IDs de imagem do imovel para reordenar");
+        }
+
+        for (int indice = 0; indice < request.imagemIds().size(); indice++) {
+            Long imagemId = request.imagemIds().get(indice);
+            ImagemImovel imagem = imagensPorId.get(imagemId);
+
+            if (imagem == null) {
+                throw badRequest("A lista contem imagem que nao pertence ao imovel");
+            }
+
+            imagem.setOrdem(indice);
+        }
+
+        return imagemImovelRepository.saveAll(imagens)
+                .stream()
+                .sorted((primeira, segunda) -> primeira.getOrdem().compareTo(segunda.getOrdem()))
+                .map(ImagemImovelResponse::fromEntity)
+                .toList();
+    }
+
     public void removerImagem(Long imovelId, Long imagemId) {
         buscarPorId(imovelId);
         ImagemImovel imagem = buscarImagemDoImovel(imovelId, imagemId);
@@ -277,6 +309,12 @@ public class ImovelService {
         List<ImagemImovel> imagens = imagemImovelRepository.findByImovelIdOrderByOrdemAsc(imovelId);
         imagens.forEach(imagem -> imagem.setCapa(false));
         imagemImovelRepository.saveAll(imagens);
+    }
+
+    private void validarIdsReordenacao(List<Long> imagemIds) {
+        if (new HashSet<>(imagemIds).size() != imagemIds.size()) {
+            throw badRequest("A lista de imagens nao pode conter IDs repetidos");
+        }
     }
 
     private void removerArquivoLocal(String url) {

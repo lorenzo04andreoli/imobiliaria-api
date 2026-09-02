@@ -1,6 +1,7 @@
 package com.lorenzo.imobiliaria_api.imovel.controller;
 
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelRequest;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelOrdemRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
@@ -78,6 +79,14 @@ public class ImovelAdminController {
             @PathVariable Long imagemId
     ) {
         return imovelService.definirImagemComoCapa(id, imagemId);
+    }
+
+    @PutMapping("/{id}/imagens/ordem")
+    public List<ImagemImovelResponse> reordenarImagens(
+            @PathVariable Long id,
+            @RequestBody @Valid ImagemImovelOrdemRequest request
+    ) {
+        return imovelService.reordenarImagens(id, request);
     }
 
     @DeleteMapping("/{id}/imagens/{imagemId}")
