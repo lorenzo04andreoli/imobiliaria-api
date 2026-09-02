@@ -26,6 +26,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -162,6 +163,14 @@ class ImovelAdminControllerTest {
         verify(imovelService).listarImagens(10L);
         verify(imovelService).adicionarImagem(eq(10L), any(ImagemImovelRequest.class));
         verify(imovelService).definirImagemComoCapa(10L, 7L);
+    }
+
+    @Test
+    void deveRemoverImagemDoImovel() throws Exception {
+        mockMvc.perform(delete("/api/admin/imoveis/10/imagens/7"))
+                .andExpect(status().isNoContent());
+
+        verify(imovelService).removerImagem(10L, 7L);
     }
 
     @Test

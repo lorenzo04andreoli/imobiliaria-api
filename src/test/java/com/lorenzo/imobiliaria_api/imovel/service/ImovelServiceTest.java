@@ -222,6 +222,40 @@ class ImovelServiceTest {
         verifyNoInteractions(imagemImovelRepository);
     }
 
+    @Test
+    void deveRemoverImagemLocalEPromoverNovaCapa(@org.junit.jupiter.api.io.TempDir Path tempDir) throws IOException {
+        uploadDir = tempDir.resolve("imoveis");
+        Files.createDirectories(uploadDir);
+        Path arquivo = uploadDir.resolve("fachada.png");
+        Files.writeString(arquivo, "conteudo");
+
+        Imovel imovel = imovel();
+        ImagemImovel imagemRemovida = imagem(imovel);
+        imagemRemovida.setUrl("/uploads/imoveis/fachada.png");
+        imagemRemovida.setCapa(true);
+
+        ImagemImovel novaCapa = imagem(imovel);
+        novaCapa.setId(8L);
+        novaCapa.setUrl("https://example.com/sala.jpg");
+        novaCapa.setCapa(false);
+
+        when(imovelRepository.findById(10L)).thenReturn(Optional.of(imovel));
+        when(imagemImovelRepository.findByIdAndImovelId(7L, 10L)).thenReturn(Optional.of(imagemRemovida));
+        when(imagemImovelRepository.findByImovelIdOrderByOrdemAsc(10L))
+                .thenReturn(List.of(imagemRemovida, novaCapa));
+
+        ReflectionTestUtils.setField(imovelService, "uploadImoveisDir", uploadDir.toString());
+        ReflectionTestUtils.setField(imovelService, "uploadPublicPath", "/uploads/imoveis");
+
+        imovelService.removerImagem(10L, 7L);
+
+        assertThat(Files.exists(arquivo)).isFalse();
+        assertThat(novaCapa.getCapa()).isTrue();
+        verify(imovelRepository).findById(10L);
+        verify(imagemImovelRepository).delete(imagemRemovida);
+        verify(imagemImovelRepository).save(novaCapa);
+    }
+
     private ImovelFiltroRequest filtroValido() {
         return new ImovelFiltroRequest(null, null, null, null, null, null, null, null, null);
     }

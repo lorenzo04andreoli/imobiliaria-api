@@ -207,6 +207,25 @@ public class ImovelService {
         return ImagemImovelResponse.fromEntity(imagemImovelRepository.save(imagem));
     }
 
+    public void removerImagem(Long imovelId, Long imagemId) {
+        buscarPorId(imovelId);
+        ImagemImovel imagem = buscarImagemDoImovel(imovelId, imagemId);
+        List<ImagemImovel> imagens = imagemImovelRepository.findByImovelIdOrderByOrdemAsc(imovelId);
+
+        removerArquivoLocal(imagem.getUrl());
+        imagemImovelRepository.delete(imagem);
+
+        if (Boolean.TRUE.equals(imagem.getCapa())) {
+            imagens.stream()
+                    .filter(imagemRestante -> !imagemRestante.getId().equals(imagemId))
+                    .findFirst()
+                    .ifPresent(novaCapa -> {
+                        novaCapa.setCapa(true);
+                        imagemImovelRepository.save(novaCapa);
+                    });
+        }
+    }
+
     public ImovelResponse criar(ImovelRequest request) {
         Imovel imovel = new Imovel();
         preencherDados(imovel, request);
@@ -258,6 +277,27 @@ public class ImovelService {
         List<ImagemImovel> imagens = imagemImovelRepository.findByImovelIdOrderByOrdemAsc(imovelId);
         imagens.forEach(imagem -> imagem.setCapa(false));
         imagemImovelRepository.saveAll(imagens);
+    }
+
+    private void removerArquivoLocal(String url) {
+        String publicPath = normalizarPublicPath();
+        if (!StringUtils.hasText(url) || !url.startsWith(publicPath + "/")) {
+            return;
+        }
+
+        Path diretorio = Path.of(uploadImoveisDir).toAbsolutePath().normalize();
+        String arquivoRelativo = url.substring(publicPath.length() + 1);
+        Path arquivo = diretorio.resolve(arquivoRelativo).normalize();
+
+        if (!arquivo.startsWith(diretorio)) {
+            throw badRequest("URL de imagem local invalida");
+        }
+
+        try {
+            Files.deleteIfExists(arquivo);
+        } catch (IOException exception) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Nao foi possivel remover a imagem");
+        }
     }
 
     private void preencherDados(Imovel imovel, ImovelRequest request) {

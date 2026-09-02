@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -77,6 +78,15 @@ public class ImovelAdminController {
             @PathVariable Long imagemId
     ) {
         return imovelService.definirImagemComoCapa(id, imagemId);
+    }
+
+    @DeleteMapping("/{id}/imagens/{imagemId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removerImagem(
+            @PathVariable Long id,
+            @PathVariable Long imagemId
+    ) {
+        imovelService.removerImagem(id, imagemId);
     }
 
     @PutMapping("/{id}")
