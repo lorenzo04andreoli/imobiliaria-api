@@ -182,6 +182,72 @@ class ImovelServiceTest {
     }
 
     @Test
+    void deveConsultarPublicadosSemPaginacaoComImagens() {
+        Imovel imovel = imovel();
+        ImagemImovel imagem = imagem(imovel);
+
+        when(imovelRepository.findByStatusOrderByCriadoEmDesc(StatusImovel.PUBLICADO)).thenReturn(List.of(imovel));
+        when(imagemImovelRepository.findByImovelIdInOrderByImovelIdAscOrdemAsc(List.of(10L)))
+                .thenReturn(List.of(imagem));
+
+        List<ImovelResponse> response = imovelService.listarPublicados();
+
+        assertThat(response).hasSize(1);
+        assertThat(response.get(0).imagens()).hasSize(1);
+        assertThat(response.get(0).imagens().get(0).url()).isEqualTo("https://example.com/imovel.jpg");
+        verify(imagemImovelRepository).findByImovelIdInOrderByImovelIdAscOrdemAsc(List.of(10L));
+    }
+
+    @Test
+    void deveConsultarPublicadoPorIdComImagens() {
+        Imovel imovel = imovel();
+        ImagemImovel imagem = imagem(imovel);
+
+        when(imovelRepository.findByIdAndStatus(10L, StatusImovel.PUBLICADO)).thenReturn(Optional.of(imovel));
+        when(imagemImovelRepository.findByImovelIdOrderByOrdemAsc(10L)).thenReturn(List.of(imagem));
+
+        ImovelResponse response = imovelService.buscarPublicadoPorId(10L);
+
+        assertThat(response.id()).isEqualTo(10L);
+        assertThat(response.imagens()).hasSize(1);
+        assertThat(response.imagens().get(0).url()).isEqualTo("https://example.com/imovel.jpg");
+        verify(imagemImovelRepository).findByImovelIdOrderByOrdemAsc(10L);
+    }
+
+    @Test
+    void deveConsultarTodosSemPaginacaoComImagens() {
+        Imovel imovel = imovel();
+        ImagemImovel imagem = imagem(imovel);
+
+        when(imovelRepository.findAllByOrderByCriadoEmDesc()).thenReturn(List.of(imovel));
+        when(imagemImovelRepository.findByImovelIdInOrderByImovelIdAscOrdemAsc(List.of(10L)))
+                .thenReturn(List.of(imagem));
+
+        List<ImovelResponse> response = imovelService.listarTodos();
+
+        assertThat(response).hasSize(1);
+        assertThat(response.get(0).imagens()).hasSize(1);
+        assertThat(response.get(0).imagens().get(0).url()).isEqualTo("https://example.com/imovel.jpg");
+        verify(imagemImovelRepository).findByImovelIdInOrderByImovelIdAscOrdemAsc(List.of(10L));
+    }
+
+    @Test
+    void deveConsultarAdministrativoPorIdComImagens() {
+        Imovel imovel = imovel();
+        ImagemImovel imagem = imagem(imovel);
+
+        when(imovelRepository.findById(10L)).thenReturn(Optional.of(imovel));
+        when(imagemImovelRepository.findByImovelIdOrderByOrdemAsc(10L)).thenReturn(List.of(imagem));
+
+        ImovelResponse response = imovelService.buscarPorIdAdmin(10L);
+
+        assertThat(response.id()).isEqualTo(10L);
+        assertThat(response.imagens()).hasSize(1);
+        assertThat(response.imagens().get(0).url()).isEqualTo("https://example.com/imovel.jpg");
+        verify(imagemImovelRepository).findByImovelIdOrderByOrdemAsc(10L);
+    }
+
+    @Test
     void deveValidarPaginaNegativa() {
         assertBadRequest(
                 () -> imovelService.listarPublicados(filtroValido(), -1, 12, "criadoEm", "desc"),

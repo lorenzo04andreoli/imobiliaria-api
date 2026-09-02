@@ -62,10 +62,9 @@ public class ImovelService {
     private String uploadPublicPath;
 
     public List<ImovelResponse> listarPublicados() {
-        return imovelRepository.findByStatusOrderByCriadoEmDesc(StatusImovel.PUBLICADO)
-                .stream()
-                .map(ImovelResponse::fromEntity)
-                .toList();
+        return montarResponsesComImagens(
+                imovelRepository.findByStatusOrderByCriadoEmDesc(StatusImovel.PUBLICADO)
+        );
     }
 
     public PaginaResponse<ImovelResponse> listarPublicados(
@@ -107,15 +106,14 @@ public class ImovelService {
 
     public ImovelResponse buscarPublicadoPorId(Long id) {
         return imovelRepository.findByIdAndStatus(id, StatusImovel.PUBLICADO)
-                .map(ImovelResponse::fromEntity)
+                .map(this::montarResponseComImagens)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Imovel nao encontrado"));
     }
 
     public List<ImovelResponse> listarTodos() {
-        return imovelRepository.findAllByOrderByCriadoEmDesc()
-                .stream()
-                .map(ImovelResponse::fromEntity)
-                .toList();
+        return montarResponsesComImagens(
+                imovelRepository.findAllByOrderByCriadoEmDesc()
+        );
     }
 
     public PaginaResponse<ImovelResponse> listarTodos(
@@ -157,7 +155,7 @@ public class ImovelService {
     }
 
     public ImovelResponse buscarPorIdAdmin(Long id) {
-        return ImovelResponse.fromEntity(buscarPorId(id));
+        return montarResponseComImagens(buscarPorId(id));
     }
 
     public List<ImagemImovelResponse> listarImagens(Long imovelId) {
@@ -300,14 +298,14 @@ public class ImovelService {
         Imovel imovel = new Imovel();
         preencherDados(imovel, request);
 
-        return ImovelResponse.fromEntity(imovelRepository.save(imovel));
+        return montarResponseComImagens(imovelRepository.save(imovel));
     }
 
     public ImovelResponse atualizar(Long id, ImovelRequest request) {
         Imovel imovel = buscarPorId(id);
         preencherDados(imovel, request);
 
-        return ImovelResponse.fromEntity(imovelRepository.save(imovel));
+        return montarResponseComImagens(imovelRepository.save(imovel));
     }
 
     public ImovelResponse inativar(Long id) {
@@ -330,7 +328,7 @@ public class ImovelService {
         Imovel imovel = buscarPorId(id);
         imovel.setStatus(status);
 
-        return ImovelResponse.fromEntity(imovelRepository.save(imovel));
+        return montarResponseComImagens(imovelRepository.save(imovel));
     }
 
     private Imovel buscarPorId(Long id) {
@@ -407,6 +405,23 @@ public class ImovelService {
         return imagemImovelRepository.findByImovelIdInOrderByImovelIdAscOrdemAsc(ids)
                 .stream()
                 .collect(Collectors.groupingBy(imagem -> imagem.getImovel().getId()));
+    }
+
+    private List<ImovelResponse> montarResponsesComImagens(List<Imovel> imoveis) {
+        Map<Long, List<ImagemImovel>> imagensPorImovel = buscarImagensPorImovel(imoveis);
+
+        return imoveis.stream()
+                .map(imovel -> ImovelResponse.fromEntity(
+                        imovel,
+                        imagensPorImovel.getOrDefault(imovel.getId(), List.of())
+                ))
+                .toList();
+    }
+
+    private ImovelResponse montarResponseComImagens(Imovel imovel) {
+        List<ImagemImovel> imagens = imagemImovelRepository.findByImovelIdOrderByOrdemAsc(imovel.getId());
+
+        return ImovelResponse.fromEntity(imovel, imagens);
     }
 
     private Sort criarOrdenacao(String sort, String direction) {
