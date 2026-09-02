@@ -8,6 +8,7 @@ import com.lorenzo.imobiliaria_api.imovel.service.ImovelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,8 +16,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -55,6 +58,17 @@ public class ImovelAdminController {
             @RequestBody @Valid ImagemImovelRequest request
     ) {
         return imovelService.adicionarImagem(id, request);
+    }
+
+    @PostMapping(value = "/{id}/imagens/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @ResponseStatus(HttpStatus.CREATED)
+    public ImagemImovelResponse uploadImagem(
+            @PathVariable Long id,
+            @RequestParam("arquivo") MultipartFile arquivo,
+            @RequestParam(required = false) Integer ordem,
+            @RequestParam(required = false) Boolean capa
+    ) {
+        return imovelService.uploadImagem(id, arquivo, ordem, capa);
     }
 
     @PatchMapping("/{id}/imagens/{imagemId}/capa")

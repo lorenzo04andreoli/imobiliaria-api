@@ -15,10 +15,16 @@ import org.mockito.ArgumentCaptor;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.mock.web.MockMultipartFile;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -26,6 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class ImovelServiceTest {
@@ -33,6 +40,7 @@ class ImovelServiceTest {
     private ImovelRepository imovelRepository;
     private ImagemImovelRepository imagemImovelRepository;
     private ImovelService imovelService;
+    private Path uploadDir;
 
     @BeforeEach
     void setUp() {
@@ -156,6 +164,62 @@ class ImovelServiceTest {
                 () -> imovelService.listarPublicados(filtro, 0, 12, "preco", "asc"),
                 "O parametro precoMin deve ser menor ou igual a precoMax"
         );
+    }
+
+    @Test
+    void deveFazerUploadDeImagemDoImovel(@org.junit.jupiter.api.io.TempDir Path tempDir) throws IOException {
+        uploadDir = tempDir.resolve("imoveis");
+        Imovel imovel = imovel();
+
+        when(imovelRepository.findById(10L)).thenReturn(Optional.of(imovel));
+        when(imagemImovelRepository.countByImovelId(10L)).thenReturn(0L);
+        when(imagemImovelRepository.findByImovelIdOrderByOrdemAsc(10L)).thenReturn(List.of());
+        when(imagemImovelRepository.save(any(ImagemImovel.class)))
+                .thenAnswer(invocation -> {
+                    ImagemImovel imagem = invocation.getArgument(0);
+                    imagem.setId(7L);
+                    return imagem;
+                });
+
+        ReflectionTestUtils.setField(imovelService, "uploadImoveisDir", uploadDir.toString());
+        ReflectionTestUtils.setField(imovelService, "uploadPublicPath", "/uploads/imoveis");
+
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "arquivo",
+                "fachada.png",
+                "image/png",
+                "conteudo".getBytes()
+        );
+
+        var response = imovelService.uploadImagem(10L, arquivo, 2, true);
+
+        assertThat(response.id()).isEqualTo(7L);
+        assertThat(response.url()).startsWith("/uploads/imoveis/");
+        assertThat(response.url()).endsWith(".png");
+        assertThat(response.ordem()).isEqualTo(2);
+        assertThat(response.capa()).isTrue();
+        try (var arquivos = Files.list(uploadDir)) {
+            assertThat(arquivos).hasSize(1);
+        }
+        verify(imovelRepository).findById(10L);
+        verify(imagemImovelRepository).save(any(ImagemImovel.class));
+    }
+
+    @Test
+    void deveValidarTipoDeArquivoNoUpload() {
+        MockMultipartFile arquivo = new MockMultipartFile(
+                "arquivo",
+                "arquivo.txt",
+                "text/plain",
+                "conteudo".getBytes()
+        );
+
+        assertBadRequest(
+                () -> imovelService.uploadImagem(10L, arquivo, null, null),
+                "Arquivo deve ser uma imagem JPG, PNG ou WEBP"
+        );
+
+        verifyNoInteractions(imagemImovelRepository);
     }
 
     private ImovelFiltroRequest filtroValido() {

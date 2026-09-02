@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -160,6 +162,30 @@ class ImovelAdminControllerTest {
         verify(imovelService).listarImagens(10L);
         verify(imovelService).adicionarImagem(eq(10L), any(ImagemImovelRequest.class));
         verify(imovelService).definirImagemComoCapa(10L, 7L);
+    }
+
+    @Test
+    void deveFazerUploadDeImagemDoImovel() throws Exception {
+        ImagemImovelResponse imagem = new ImagemImovelResponse(
+                7L,
+                "/uploads/imoveis/foto.jpg",
+                0,
+                true
+        );
+
+        when(imovelService.uploadImagem(eq(10L), any(MultipartFile.class), eq(0), eq(true)))
+                .thenReturn(imagem);
+
+        mockMvc.perform(multipart("/api/admin/imoveis/10/imagens/upload")
+                        .file("arquivo", "conteudo".getBytes())
+                        .param("ordem", "0")
+                        .param("capa", "true"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(7))
+                .andExpect(jsonPath("$.url").value("/uploads/imoveis/foto.jpg"))
+                .andExpect(jsonPath("$.capa").value(true));
+
+        verify(imovelService).uploadImagem(eq(10L), any(MultipartFile.class), eq(0), eq(true));
     }
 
     private ImovelRequest imovelRequest(StatusImovel status) {

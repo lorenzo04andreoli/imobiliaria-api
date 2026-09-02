@@ -12,15 +12,23 @@ import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
 import com.lorenzo.imobiliaria_api.imovel.dto.PaginaResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Locale;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,6 +36,11 @@ import java.util.stream.Collectors;
 public class ImovelService {
 
     private static final int TAMANHO_MAXIMO_PAGINA = 50;
+    private static final Set<String> TIPOS_IMAGEM_PERMITIDOS = Set.of(
+            "image/jpeg",
+            "image/png",
+            "image/webp"
+    );
     private static final Map<String, String> CAMPOS_ORDENACAO_PUBLICA = Map.of(
             "criadoEm", "criadoEm",
             "preco", "preco",
@@ -39,6 +52,12 @@ public class ImovelService {
 
     private final ImovelRepository imovelRepository;
     private final ImagemImovelRepository imagemImovelRepository;
+
+    @Value("${app.upload.imoveis-dir:uploads/imoveis}")
+    private String uploadImoveisDir;
+
+    @Value("${app.upload.public-path:/uploads/imoveis}")
+    private String uploadPublicPath;
 
     public List<ImovelResponse> listarPublicados() {
         return imovelRepository.findByStatusOrderByCriadoEmDesc(StatusImovel.PUBLICADO)
@@ -112,19 +131,70 @@ public class ImovelService {
 
     public ImagemImovelResponse adicionarImagem(Long imovelId, ImagemImovelRequest request) {
         Imovel imovel = buscarPorId(imovelId);
-        boolean primeiraImagem = imagemImovelRepository.countByImovelId(imovelId) == 0;
 
+        return salvarImagem(imovel, request.url(), request.ordem(), request.capa());
+    }
+
+    public ImagemImovelResponse uploadImagem(Long imovelId, MultipartFile arquivo, Integer ordem, Boolean capa) {
+        validarArquivoImagem(arquivo);
+        Imovel imovel = buscarPorId(imovelId);
+
+        Path diretorio = Path.of(uploadImoveisDir).toAbsolutePath().normalize();
+        String nomeArquivo = UUID.randomUUID() + extensaoDoArquivo(arquivo.getContentType());
+        Path destino = diretorio.resolve(nomeArquivo).normalize();
+
+        if (!destino.startsWith(diretorio)) {
+            throw badRequest("Nome de arquivo invalido");
+        }
+
+        try {
+            Files.createDirectories(diretorio);
+            arquivo.transferTo(destino);
+        } catch (IOException exception) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Nao foi possivel salvar a imagem");
+        }
+
+        return salvarImagem(imovel, normalizarPublicPath() + "/" + nomeArquivo, ordem, capa);
+    }
+
+    private ImagemImovelResponse salvarImagem(Imovel imovel, String url, Integer ordem, Boolean capa) {
+        Long imovelId = imovel.getId();
+        boolean primeiraImagem = imagemImovelRepository.countByImovelId(imovelId) == 0;
         ImagemImovel imagem = new ImagemImovel();
         imagem.setImovel(imovel);
-        imagem.setUrl(request.url());
-        imagem.setOrdem(request.ordem() != null ? request.ordem() : 0);
-        imagem.setCapa(request.capa() != null ? request.capa() : primeiraImagem);
+        imagem.setUrl(url);
+        imagem.setOrdem(ordem != null ? ordem : 0);
+        imagem.setCapa(capa != null ? capa : primeiraImagem);
 
         if (Boolean.TRUE.equals(imagem.getCapa())) {
             removerCapaDasImagens(imovelId);
         }
 
         return ImagemImovelResponse.fromEntity(imagemImovelRepository.save(imagem));
+    }
+
+    private void validarArquivoImagem(MultipartFile arquivo) {
+        if (arquivo == null || arquivo.isEmpty()) {
+            throw badRequest("Arquivo de imagem e obrigatorio");
+        }
+
+        String contentType = arquivo.getContentType();
+        if (contentType == null || !TIPOS_IMAGEM_PERMITIDOS.contains(contentType.toLowerCase(Locale.ROOT))) {
+            throw badRequest("Arquivo deve ser uma imagem JPG, PNG ou WEBP");
+        }
+    }
+
+    private String extensaoDoArquivo(String contentType) {
+        return switch (contentType.toLowerCase(Locale.ROOT)) {
+            case "image/jpeg" -> ".jpg";
+            case "image/png" -> ".png";
+            case "image/webp" -> ".webp";
+            default -> throw badRequest("Arquivo deve ser uma imagem JPG, PNG ou WEBP");
+        };
+    }
+
+    private String normalizarPublicPath() {
+        return uploadPublicPath.startsWith("/") ? uploadPublicPath : "/" + uploadPublicPath;
     }
 
     public ImagemImovelResponse definirImagemComoCapa(Long imovelId, Long imagemId) {
