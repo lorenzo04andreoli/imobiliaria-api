@@ -116,6 +116,72 @@ class ImovelServiceTest {
     }
 
     @Test
+    void deveConsultarAdministrativosComParametrosValidos() {
+        Imovel imovel = imovel();
+        ImagemImovel imagem = imagem(imovel);
+
+        when(imovelRepository.buscarComFiltros(
+                eq(StatusImovel.RASCUNHO),
+                eq("quintal"),
+                eq("Presidente Prudente"),
+                eq("Centro"),
+                eq(TipoImovel.CASA),
+                eq(new BigDecimal("300000")),
+                eq(new BigDecimal("700000")),
+                eq(2),
+                eq(1),
+                eq(1),
+                any(Pageable.class)
+        )).thenReturn(new PageImpl<>(List.of(imovel)));
+        when(imagemImovelRepository.findByImovelIdInOrderByImovelIdAscOrdemAsc(List.of(10L)))
+                .thenReturn(List.of(imagem));
+
+        PaginaResponse<ImovelResponse> response = imovelService.listarTodos(
+                new ImovelFiltroRequest(
+                        " quintal ",
+                        " Presidente Prudente ",
+                        " Centro ",
+                        TipoImovel.CASA,
+                        new BigDecimal("300000"),
+                        new BigDecimal("700000"),
+                        2,
+                        1,
+                        1
+                ),
+                StatusImovel.RASCUNHO,
+                0,
+                12,
+                "preco",
+                "asc"
+        );
+
+        ArgumentCaptor<Pageable> pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
+        verify(imovelRepository).buscarComFiltros(
+                eq(StatusImovel.RASCUNHO),
+                eq("quintal"),
+                eq("Presidente Prudente"),
+                eq("Centro"),
+                eq(TipoImovel.CASA),
+                eq(new BigDecimal("300000")),
+                eq(new BigDecimal("700000")),
+                eq(2),
+                eq(1),
+                eq(1),
+                pageableCaptor.capture()
+        );
+
+        Pageable pageable = pageableCaptor.getValue();
+        assertThat(pageable.getPageNumber()).isZero();
+        assertThat(pageable.getPageSize()).isEqualTo(12);
+        assertThat(pageable.getSort().getOrderFor("preco")).isNotNull();
+        assertThat(pageable.getSort().getOrderFor("preco").isAscending()).isTrue();
+        assertThat(response.content()).hasSize(1);
+        assertThat(response.content().get(0).imagens()).hasSize(1);
+        assertThat(response.content().get(0).imagens().get(0).url()).isEqualTo("https://example.com/imovel.jpg");
+        verify(imagemImovelRepository).findByImovelIdInOrderByImovelIdAscOrdemAsc(List.of(10L));
+    }
+
+    @Test
     void deveValidarPaginaNegativa() {
         assertBadRequest(
                 () -> imovelService.listarPublicados(filtroValido(), -1, 12, "criadoEm", "desc"),

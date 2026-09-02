@@ -1,10 +1,14 @@
 package com.lorenzo.imobiliaria_api.imovel.controller;
 
+import com.lorenzo.imobiliaria_api.imovel.StatusImovel;
+import com.lorenzo.imobiliaria_api.imovel.TipoImovel;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelOrdemRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImovelFiltroRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
+import com.lorenzo.imobiliaria_api.imovel.dto.PaginaResponse;
 import com.lorenzo.imobiliaria_api.imovel.service.ImovelService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -33,8 +38,30 @@ public class ImovelAdminController {
     private final ImovelService imovelService;
 
     @GetMapping
-    public List<ImovelResponse> listar() {
-        return imovelService.listarTodos();
+    public PaginaResponse<ImovelResponse> listar(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String cidade,
+            @RequestParam(required = false) String bairro,
+            @RequestParam(required = false) TipoImovel tipo,
+            @RequestParam(required = false) StatusImovel status,
+            @RequestParam(required = false) BigDecimal precoMin,
+            @RequestParam(required = false) BigDecimal precoMax,
+            @RequestParam(required = false) Integer quartosMin,
+            @RequestParam(required = false) Integer banheirosMin,
+            @RequestParam(required = false) Integer vagasMin,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "criadoEm") String sort,
+            @RequestParam(defaultValue = "desc") String direction
+    ) {
+        return imovelService.listarTodos(
+                new ImovelFiltroRequest(q, cidade, bairro, tipo, precoMin, precoMax, quartosMin, banheirosMin, vagasMin),
+                status,
+                page,
+                size,
+                sort,
+                direction
+        );
     }
 
     @GetMapping("/{id}")

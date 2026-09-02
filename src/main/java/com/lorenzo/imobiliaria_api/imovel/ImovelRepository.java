@@ -50,4 +50,35 @@ public interface ImovelRepository extends JpaRepository<Imovel, Long> {
             @Param("vagasMin") Integer vagasMin,
             Pageable pageable
     );
+
+    @Query("""
+            select i
+            from Imovel i
+            where (:status is null or i.status = :status)
+              and (:q is null or lower(i.titulo) like lower(concat('%', :q, '%'))
+                   or lower(i.descricao) like lower(concat('%', :q, '%'))
+                   or lower(i.cidade) like lower(concat('%', :q, '%'))
+                   or lower(i.bairro) like lower(concat('%', :q, '%')) )
+              and (:cidade is null or lower(i.cidade) like lower(concat('%', :cidade, '%')))
+              and (:bairro is null or lower(i.bairro) like lower(concat('%', :bairro, '%')))
+              and (:tipo is null or i.tipo = :tipo)
+              and (:precoMin is null or i.preco >= :precoMin)
+              and (:precoMax is null or i.preco <= :precoMax)
+              and (:quartosMin is null or i.quartos >= :quartosMin)
+              and (:banheirosMin is null or i.banheiros >= :banheirosMin)
+              and (:vagasMin is null or i.vagas >= :vagasMin)
+            """)
+    Page<Imovel> buscarComFiltros(
+            @Param("status") StatusImovel status,
+            @Param("q") String q,
+            @Param("cidade") String cidade,
+            @Param("bairro") String bairro,
+            @Param("tipo") TipoImovel tipo,
+            @Param("precoMin") BigDecimal precoMin,
+            @Param("precoMax") BigDecimal precoMax,
+            @Param("quartosMin") Integer quartosMin,
+            @Param("banheirosMin") Integer banheirosMin,
+            @Param("vagasMin") Integer vagasMin,
+            Pageable pageable
+    );
 }

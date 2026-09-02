@@ -6,8 +6,10 @@ import com.lorenzo.imobiliaria_api.imovel.TipoImovel;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelOrdemRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImagemImovelResponse;
+import com.lorenzo.imobiliaria_api.imovel.dto.ImovelFiltroRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelRequest;
 import com.lorenzo.imobiliaria_api.imovel.dto.ImovelResponse;
+import com.lorenzo.imobiliaria_api.imovel.dto.PaginaResponse;
 import com.lorenzo.imobiliaria_api.imovel.service.ImovelService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,20 +53,59 @@ class ImovelAdminControllerTest {
 
     @Test
     void deveListarEBuscarImoveisAdministrativos() throws Exception {
-        when(imovelService.listarTodos()).thenReturn(List.of(imovelResponse(StatusImovel.RASCUNHO)));
+        when(imovelService.listarTodos(
+                any(ImovelFiltroRequest.class),
+                eq(StatusImovel.RASCUNHO),
+                eq(0),
+                eq(12),
+                eq("criadoEm"),
+                eq("desc")
+        )).thenReturn(new PaginaResponse<>(
+                List.of(imovelResponse(StatusImovel.RASCUNHO)),
+                0,
+                12,
+                1,
+                1,
+                true,
+                true
+        ));
         when(imovelService.buscarPorIdAdmin(10L)).thenReturn(imovelResponse(StatusImovel.RASCUNHO));
 
-        mockMvc.perform(get("/api/admin/imoveis"))
+        mockMvc.perform(get("/api/admin/imoveis")
+                        .param("q", "quintal")
+                        .param("cidade", "Presidente Prudente")
+                        .param("bairro", "Centro")
+                        .param("tipo", "CASA")
+                        .param("status", "RASCUNHO")
+                        .param("precoMin", "300000")
+                        .param("precoMax", "700000")
+                        .param("quartosMin", "2")
+                        .param("banheirosMin", "1")
+                        .param("vagasMin", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(10))
-                .andExpect(jsonPath("$[0].status").value("RASCUNHO"));
+                .andExpect(jsonPath("$.content[0].id").value(10))
+                .andExpect(jsonPath("$.content[0].status").value("RASCUNHO"))
+                .andExpect(jsonPath("$.page").value(0))
+                .andExpect(jsonPath("$.size").value(12))
+                .andExpect(jsonPath("$.totalElements").value(1));
 
         mockMvc.perform(get("/api/admin/imoveis/10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(10))
                 .andExpect(jsonPath("$.status").value("RASCUNHO"));
 
-        verify(imovelService).listarTodos();
+        ArgumentCaptor<ImovelFiltroRequest> filtroCaptor = ArgumentCaptor.forClass(ImovelFiltroRequest.class);
+        verify(imovelService).listarTodos(
+                filtroCaptor.capture(),
+                eq(StatusImovel.RASCUNHO),
+                eq(0),
+                eq(12),
+                eq("criadoEm"),
+                eq("desc")
+        );
+        assertThat(filtroCaptor.getValue().q()).isEqualTo("quintal");
+        assertThat(filtroCaptor.getValue().tipo()).isEqualTo(TipoImovel.CASA);
+        assertThat(filtroCaptor.getValue().precoMin()).isEqualByComparingTo("300000");
         verify(imovelService).buscarPorIdAdmin(10L);
     }
 

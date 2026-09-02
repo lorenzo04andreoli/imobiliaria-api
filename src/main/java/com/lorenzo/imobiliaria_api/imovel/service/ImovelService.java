@@ -118,6 +118,44 @@ public class ImovelService {
                 .toList();
     }
 
+    public PaginaResponse<ImovelResponse> listarTodos(
+            ImovelFiltroRequest filtro,
+            StatusImovel status,
+            int page,
+            int size,
+            String sort,
+            String direction
+    ) {
+        validarConsulta(filtro, page, size, sort, direction);
+
+        PageRequest pageable = PageRequest.of(
+                page,
+                size,
+                criarOrdenacao(normalizarTexto(sort), normalizarTexto(direction))
+        );
+
+        var imoveis = imovelRepository.buscarComFiltros(
+                status,
+                limparTexto(filtro.q()),
+                limparTexto(filtro.cidade()),
+                limparTexto(filtro.bairro()),
+                filtro.tipo(),
+                filtro.precoMin(),
+                filtro.precoMax(),
+                filtro.quartosMin(),
+                filtro.banheirosMin(),
+                filtro.vagasMin(),
+                pageable
+        );
+
+        Map<Long, List<ImagemImovel>> imagensPorImovel = buscarImagensPorImovel(imoveis.getContent());
+
+        return PaginaResponse.fromPage(
+                imoveis,
+                imovel -> ImovelResponse.fromEntity(imovel, imagensPorImovel.getOrDefault(imovel.getId(), List.of()))
+        );
+    }
+
     public ImovelResponse buscarPorIdAdmin(Long id) {
         return ImovelResponse.fromEntity(buscarPorId(id));
     }
@@ -381,6 +419,16 @@ public class ImovelService {
     }
 
     private void validarConsultaPublica(
+            ImovelFiltroRequest filtro,
+            int page,
+            int size,
+            String sort,
+            String direction
+    ) {
+        validarConsulta(filtro, page, size, sort, direction);
+    }
+
+    private void validarConsulta(
             ImovelFiltroRequest filtro,
             int page,
             int size,
