@@ -152,6 +152,37 @@ Por padrao, a carga inicial fica desativada:
 app.seed.enabled=${APP_SEED_ENABLED:false}
 ```
 
+## Upload de Imagens
+
+O projeto aceita imagens enviadas pelo painel administrativo. Por padrao, os arquivos sao salvos em:
+
+```txt
+uploads/imoveis
+```
+
+A pasta `uploads/` fica fora do Git por ser dado de runtime.
+
+Configuracoes:
+
+```properties
+app.upload.imoveis-dir=${APP_UPLOAD_IMOVEIS_DIR:uploads/imoveis}
+app.upload.public-path=/uploads/imoveis
+spring.servlet.multipart.max-file-size=5MB
+spring.servlet.multipart.max-request-size=5MB
+```
+
+Formatos permitidos:
+
+- JPG
+- PNG
+- WEBP
+
+As imagens locais ficam publicas em:
+
+```txt
+/uploads/imoveis/{nome-do-arquivo}
+```
+
 ## Executar Localmente
 
 Na raiz do projeto:
@@ -325,8 +356,95 @@ PATCH  /api/admin/imoveis/{id}/rascunho
 PATCH  /api/admin/imoveis/{id}/inativar
 GET    /api/admin/imoveis/{id}/imagens
 POST   /api/admin/imoveis/{id}/imagens
+POST   /api/admin/imoveis/{id}/imagens/upload
+PUT    /api/admin/imoveis/{id}/imagens/ordem
 PATCH  /api/admin/imoveis/{id}/imagens/{imagemId}/capa
+DELETE /api/admin/imoveis/{id}/imagens/{imagemId}
 ```
+
+Todos os endpoints administrativos exigem token JWT.
+
+A listagem administrativa aceita os mesmos filtros da listagem publica e tambem o filtro `status`:
+
+```http
+GET /api/admin/imoveis?status=RASCUNHO&q=quintal&page=0&size=12&sort=criadoEm&direction=desc
+```
+
+Filtros disponiveis:
+
+- `q`: busca em titulo, descricao, cidade e bairro
+- `cidade`
+- `bairro`
+- `tipo`
+- `status`
+- `precoMin`
+- `precoMax`
+- `quartosMin`
+- `banheirosMin`
+- `vagasMin`
+
+A resposta da listagem administrativa tambem usa o envelope paginado:
+
+```json
+{
+  "content": [],
+  "page": 0,
+  "size": 12,
+  "totalElements": 0,
+  "totalPages": 0,
+  "first": true,
+  "last": true
+}
+```
+
+Cadastrar imagem por URL:
+
+```http
+POST /api/admin/imoveis/{id}/imagens
+```
+
+```json
+{
+  "url": "https://example.com/imovel.jpg",
+  "ordem": 0,
+  "capa": true
+}
+```
+
+Enviar imagem local:
+
+```http
+POST /api/admin/imoveis/{id}/imagens/upload
+Content-Type: multipart/form-data
+```
+
+Campos do formulario:
+
+- `arquivo`: arquivo JPG, PNG ou WEBP
+- `ordem`: opcional
+- `capa`: opcional
+
+Reordenar imagens:
+
+```http
+PUT /api/admin/imoveis/{id}/imagens/ordem
+```
+
+```json
+{
+  "imagemIds": [12, 11, 10]
+}
+```
+
+Para reordenar, envie todos os IDs de imagem daquele imovel, sem repeticao, na ordem desejada.
+
+Remover imagem:
+
+```http
+DELETE /api/admin/imoveis/{id}/imagens/{imagemId}
+```
+
+Se a imagem removida for local, o arquivo fisico tambem sera removido. Se ela for capa, outra imagem do imovel sera promovida automaticamente quando existir.
 
 ## Status de Imovel
 
