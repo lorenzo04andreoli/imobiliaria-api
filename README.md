@@ -279,6 +279,30 @@ O arquivo `.jar` sera gerado em:
 target/imobiliaria-api-0.0.1-SNAPSHOT.jar
 ```
 
+## Docker
+
+Build da imagem:
+
+```powershell
+docker build -t imobiliaria-api .
+```
+
+Rodar a API em container:
+
+```powershell
+docker run --rm -p 8080:8080 `
+  -e SPRING_PROFILES_ACTIVE=prod `
+  -e DB_URL="jdbc:mysql://host.docker.internal:3306/imobiliaria_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo" `
+  -e DB_USERNAME="imobiliaria_user" `
+  -e DB_PASSWORD="troque-a-senha-do-banco" `
+  -e JWT_SECRET="troque-por-uma-chave-grande-com-mais-de-32-caracteres" `
+  -e APP_CORS_ALLOWED_ORIGINS="https://seudominio.com" `
+  -v "${PWD}/uploads:/app/uploads" `
+  imobiliaria-api
+```
+
+O volume em `/app/uploads` preserva as imagens enviadas mesmo se o container for recriado.
+
 ## Testes
 
 Os testes cobrem o contrato dos endpoints publicos de imoveis, do login administrativo e das rotas administrativas de imoveis.
