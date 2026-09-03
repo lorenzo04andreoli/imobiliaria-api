@@ -4,7 +4,7 @@ API REST para catalogo de imoveis e painel administrativo de uma corretora.
 
 O projeto faz parte de uma aplicacao full stack composta por:
 
-- site publico em HTML, CSS e JavaScript;
+- site publico em Angular;
 - painel administrativo em Angular;
 - backend em Java com Spring Boot;
 - banco de dados MySQL.
@@ -317,7 +317,12 @@ O volume em `/app/uploads` preserva as imagens enviadas mesmo se o container for
 
 ## Docker Compose de Producao
 
-O arquivo `docker-compose.prod.yml` sobe a API e o MySQL juntos.
+O arquivo `docker-compose.prod.yml` sobe a stack de producao:
+
+- frontend Angular servido por Nginx;
+- API Spring Boot;
+- MySQL;
+- volumes persistentes para banco e uploads.
 
 Crie um arquivo `.env.prod` usando `.env.prod.example` como referencia:
 
@@ -328,22 +333,28 @@ Copy-Item .env.prod.example .env.prod
 Suba os containers:
 
 ```powershell
-docker compose -p imobiliaria-api-prod --env-file .env.prod -f docker-compose.prod.yml up -d --build
+docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml up -d --build
 ```
 
 Acompanhe os logs:
 
 ```powershell
-docker compose -p imobiliaria-api-prod --env-file .env.prod -f docker-compose.prod.yml logs -f api-prod
+docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml logs -f
 ```
 
 Pare os containers:
 
 ```powershell
-docker compose -p imobiliaria-api-prod --env-file .env.prod -f docker-compose.prod.yml down
+docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml down
 ```
 
 Use `down -v` apenas quando quiser apagar tambem os volumes do banco e dos uploads.
+
+Para deploy sem custo em uma VM Oracle Cloud Always Free, veja:
+
+```txt
+DEPLOY_ORACLE.md
+```
 
 ## Testes
 
