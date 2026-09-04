@@ -330,6 +330,12 @@ Crie um arquivo `.env.prod` usando `.env.prod.example` como referencia:
 Copy-Item .env.prod.example .env.prod
 ```
 
+Para um ensaio local usando porta `8081`, use:
+
+```powershell
+Copy-Item .env.prod.local.example .env.prod
+```
+
 Suba os containers:
 
 ```powershell

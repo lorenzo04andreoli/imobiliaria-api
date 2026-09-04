@@ -44,6 +44,9 @@ services:
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET nao configurado}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:?APP_CORS_ALLOWED_ORIGINS nao configurado}
       APP_UPLOAD_IMOVEIS_DIR: /app/uploads/imoveis
+      APP_ADMIN_NOME: ${APP_ADMIN_NOME:-}
+      APP_ADMIN_EMAIL: ${APP_ADMIN_EMAIL:-}
+      APP_ADMIN_SENHA: ${APP_ADMIN_SENHA:-}
     volumes:
       - api_uploads:/app/uploads
 

@@ -70,12 +70,47 @@ IMOBILIARIA_MYSQL_PASSWORD=troque-por-outra-senha-forte
 
 JWT_SECRET=troque-por-uma-chave-grande-com-mais-de-32-caracteres
 APP_CORS_ALLOWED_ORIGINS=https://seudominio.com
+
+APP_ADMIN_NOME=Eliane
+APP_ADMIN_EMAIL=admin@seudominio.com
+APP_ADMIN_SENHA=troque-por-uma-senha-inicial-segura
 ```
 
 Se ainda não houver domínio, use temporariamente:
 
 ```env
 APP_CORS_ALLOWED_ORIGINS=http://IP_PUBLICO_DA_VM
+```
+
+O admin inicial só é criado se `APP_ADMIN_NOME`, `APP_ADMIN_EMAIL` e `APP_ADMIN_SENHA` estiverem preenchidos. Depois que o usuário já existir no banco, o inicializador não troca a senha automaticamente.
+
+## Ensaio local
+
+Para testar a mesma stack de produção na sua máquina:
+
+```powershell
+Copy-Item .env.prod.local.example .env.prod
+docker compose -p imobiliaria-local-prod --env-file .env.prod -f docker-compose.prod.yml up -d --build
+```
+
+Acesse:
+
+```text
+http://localhost:8081
+http://localhost:8081/admin/login
+```
+
+Login local do exemplo:
+
+```text
+admin@imobiliaria.com
+admin123456
+```
+
+Para parar:
+
+```powershell
+docker compose -p imobiliaria-local-prod --env-file .env.prod -f docker-compose.prod.yml down
 ```
 
 ## Subir a aplicação
