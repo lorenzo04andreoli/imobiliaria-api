@@ -1,0 +1,49 @@
+# Use with docker-compose.prod.yml (Docker Compose 2.24.4 or newer).
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  front-prod:
+    ports: !reset []
+    mem_limit: 128m
+    logging: *logging
+
+  api-prod:
+    mem_limit: 768m
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xms128m -Xmx384m"
+      SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE: "5"
+      SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE: "1"
+    logging: *logging
+
+  mysql-prod:
+    mem_limit: 640m
+    command:
+      - --innodb-buffer-pool-size=128M
+      - --max-connections=30
+      - --performance-schema=OFF
+    logging: *logging
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      SITE_DOMAIN: ${SITE_DOMAIN:?Configure SITE_DOMAIN com o dominio sem https}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - front-prod
+    logging: *logging
+
+volumes:
+  caddy_data:
+  caddy_config:
