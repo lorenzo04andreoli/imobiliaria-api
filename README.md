@@ -9,6 +9,21 @@ O projeto faz parte de uma aplicacao full stack composta por:
 - backend em Java com Spring Boot;
 - banco de dados MySQL.
 
+## Producao atual
+
+Hospedagem: AWS Lightsail em Sao Paulo, Ubuntu 24.04, com Docker Compose.
+
+- Site: https://54.94.105.56
+- Painel: https://54.94.105.56/admin/login
+- API publica: https://54.94.105.56/api/imoveis
+
+O painel esta disponivel por HTTPS, sem necessidade de tunel SSH. Credenciais
+nao sao publicadas neste repositorio. O proxy limita tentativas de login;
+excesso retorna HTTP 429. A API exige JWT nas rotas administrativas.
+
+Guias: [HTTPS e deploy](DEPLOY_HTTPS_IP.md) e [backups e operacao](ops/README.md).
+Os arquivos EC2/Caddy representam uma alternativa, nao a stack atual.
+
 ## Tecnologias
 
 - Java 17
@@ -131,7 +146,8 @@ APP_CORS_ALLOWED_ORIGINS=https://seudominio.com
 APP_UPLOAD_IMOVEIS_DIR=/caminho/persistente/uploads/imoveis
 ```
 
-O perfil `prod` usa `ddl-auto=validate`, entao o banco precisa estar com as tabelas criadas antes da aplicacao subir.
+O perfil `prod` usa `ddl-auto=validate`. O Flyway aplica as migrations antes
+da validacao do Hibernate; nao crie as tabelas manualmente em um banco novo.
 
 Em bancos novos, o Flyway executa as migrations automaticamente ao iniciar a aplicacao. Em bancos que ja tinham tabelas antes da adocao do Flyway, `spring.flyway.baseline-on-migrate=true` cria uma linha inicial de controle sem apagar dados.
 
@@ -160,6 +176,10 @@ APP_UPLOAD_IMOVEIS_DIR=uploads/imoveis
 ```
 
 As variaveis do Docker Compose usam o prefixo `IMOBILIARIA_` para evitar conflito com variaveis globais do sistema.
+
+O Compose le o `.env`, mas `spring-boot:run` nao o importa automaticamente.
+Ao executar Java fora do Compose, exporte `DB_URL`, `DB_USERNAME`,
+`DB_PASSWORD` e `JWT_SECRET` no terminal que iniciara a API.
 
 Subir o banco:
 
@@ -209,6 +229,9 @@ $env:JWT_SECRET="troque-por-uma-chave-grande-com-mais-de-32-caracteres"
 ```
 
 Nao deixe senha real commitada no repositorio.
+
+O inicializador nao altera a senha de um usuario que ja existe. Mudar apenas
+`APP_ADMIN_SENHA` no ambiente nao troca sua senha no banco.
 
 ## Dados de Exemplo
 
@@ -317,6 +340,26 @@ O volume em `/app/uploads` preserva as imagens enviadas mesmo se o container for
 
 ## Docker Compose de Producao
 
+### Servidor Lightsail existente
+
+Execute na pasta `/opt/imobiliaria/imobiliaria-api`, com imagens previamente
+construidas e carregadas e o certificado ja emitido. Preserve o `.env.prod`
+existente; nao o substitua por um exemplo.
+
+```bash
+sudo docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml -f docker-compose.ip.yml -f docker-compose.ip-https.yml up -d --no-build
+sudo docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml -f docker-compose.ip.yml -f docker-compose.ip-https.yml ps
+sudo docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml -f docker-compose.ip.yml -f docker-compose.ip-https.yml logs --tail=100
+```
+
+Use sempre os tres arquivos no servidor. `--no-build` nao gera imagens novas:
+alteracoes no codigo exigem rebuild e transferencia/carregamento das imagens.
+As portas publicas sao 80 (ACME e redirecionamento) e 443 (HTTPS).
+API e MySQL nao possuem portas publicadas; 8081 fica restrita ao loopback.
+Para a primeira instalacao, siga [DEPLOY_HTTPS_IP.md](DEPLOY_HTTPS_IP.md).
+
+### Ensaio local
+
 O arquivo `docker-compose.prod.yml` sobe a stack de producao:
 
 - frontend Angular servido por Nginx;
@@ -324,7 +367,7 @@ O arquivo `docker-compose.prod.yml` sobe a stack de producao:
 - MySQL;
 - volumes persistentes para banco e uploads.
 
-Crie um arquivo `.env.prod` usando `.env.prod.example` como referencia:
+Somente em um ambiente novo de ensaio, crie `.env.prod` usando `.env.prod.example`:
 
 ```powershell
 Copy-Item .env.prod.example .env.prod
@@ -336,7 +379,7 @@ Para um ensaio local usando porta `8081`, use:
 Copy-Item .env.prod.local.example .env.prod
 ```
 
-Suba os containers:
+Suba os containers locais (nao use estes comandos isolados no Lightsail):
 
 ```powershell
 docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml up -d --build
@@ -354,7 +397,7 @@ Pare os containers:
 docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml down
 ```
 
-Use `down -v` apenas quando quiser apagar tambem os volumes do banco e dos uploads.
+Nao use `down -v` em producao: ele remove os volumes do banco e dos uploads.
 
 O deploy atual usa Lightsail com HTTPS no IP fixo. No servidor, siga o guia
 abaixo e use os tres arquivos Compose indicados nele para preservar HTTPS:
@@ -366,6 +409,7 @@ DEPLOY_HTTPS_IP.md
 ## Testes
 
 Os testes cobrem o contrato dos endpoints publicos de imoveis, do login administrativo e das rotas administrativas de imoveis.
+Os testes de integracao usam Testcontainers e precisam de Docker disponivel.
 
 ```powershell
 .\mvnw.cmd test
@@ -623,10 +667,12 @@ Se a imagem removida for local, o arquivo fisico tambem sera removido. Se ela fo
 Origens locais liberadas atualmente:
 
 ```properties
-app.cors.allowed-origins=${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:5500,http://127.0.0.1:5500}
+app.cors.allowed-origins=${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200,http://127.0.0.1:4200,http://localhost:5500,http://127.0.0.1:5500}
 ```
 
-Antes do deploy, substitua ou complemente essa lista com o dominio real do frontend.
+No deploy atual, `docker-compose.ip-https.yml` define a origem
+`https://54.94.105.56` e as origens locais do tunel na porta 8081.
+Quando houver dominio, atualize esse override junto com DNS e certificado.
 
 ## Commits
 

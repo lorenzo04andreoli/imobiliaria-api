@@ -1,5 +1,9 @@
 # Operacao do servidor
 
+O painel atual e publico via HTTPS: https://54.94.105.56/admin/login.
+O tunel SSH e opcional. Consulte [o guia HTTPS](../DEPLOY_HTTPS_IP.md) para
+os tres arquivos Compose que devem ser usados nas atualizacoes.
+
 ## Backups
 
 `backup.sh` deve ser instalado como `/usr/local/sbin/imobiliaria-backup`,
@@ -13,7 +17,8 @@ sua inicializacao. Os arquivos ficam em `/var/backups/imobiliaria`, com
 acesso somente de root e retencao de 14 dias para backups completos.
 
 Cada backup inclui SQL, fotos, configuracao privada, checksums e um marcador
-COMPLETE. Esses arquivos CONTEM SEGREDOS e nunca devem entrar no Git.
+COMPLETE. Quando presentes, os certificados e chaves em `/etc/letsencrypt`
+tambem sao incluidos. Esses arquivos CONTEM SEGREDOS e nunca devem entrar no Git.
 Falhas podem ser consultadas com `systemctl status imobiliaria-backup.service`
 e `journalctl -u imobiliaria-backup.service`. Nao ha alertas externos.
 
@@ -47,6 +52,20 @@ antigos nao representam necessariamente as senhas atuais.
 Alterar apenas o `.env` nao troca a senha de usuarios existentes no banco.
 Use `verify-private-login.py` para validar o login pelo tunel e
 `verify-public-admin.py` para validar HTTPS, autenticacao e limite de login.
+
+Execute esses scripts com `sudo`: eles leem o arquivo privado
+`/root/imobiliaria-credentials/admin.txt`. O teste publico faz leituras e
+requisicoes de login para verificar HTTP 429, consumindo temporariamente
+a cota de login do IP de origem; nao modifica imoveis.
+
+## Certificados
+
+O timer `snap.certbot.renew.timer` cuida da renovacao. O hook
+`/etc/letsencrypt/renewal-hooks/deploy/imobiliaria-nginx` valida e recarrega
+o Nginx. Mantenha a porta 80 aberta para ACME mesmo com o site em HTTPS.
+Nao ha alerta externo automatico para falhas de renovacao ou backup.
+
+## Atualizacoes
 
 Atualizacoes automaticas de seguranca do Ubuntu estao habilitadas. Reinicios
 necessarios devem ser acompanhados pelo operador; nao ha reinicio automatico
