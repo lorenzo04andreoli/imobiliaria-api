@@ -248,7 +248,7 @@ Configuracoes:
 app.upload.imoveis-dir=${APP_UPLOAD_IMOVEIS_DIR:uploads/imoveis}
 app.upload.public-path=/uploads/imoveis
 spring.servlet.multipart.max-file-size=5MB
-spring.servlet.multipart.max-request-size=5MB
+spring.servlet.multipart.max-request-size=6MB
 ```
 
 Formatos permitidos:
@@ -356,10 +356,11 @@ docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml do
 
 Use `down -v` apenas quando quiser apagar tambem os volumes do banco e dos uploads.
 
-Para deploy sem custo em uma VM Oracle Cloud Always Free, veja:
+O deploy atual usa Lightsail com HTTPS no IP fixo. No servidor, siga o guia
+abaixo e use os tres arquivos Compose indicados nele para preservar HTTPS:
 
 ```txt
-DEPLOY_ORACLE.md
+DEPLOY_HTTPS_IP.md
 ```
 
 ## Testes

@@ -40,15 +40,13 @@ antes de trocar o trafego. Nao execute `down -v` na stack de producao.
 
 ## Credenciais
 
-`rotate-credentials.py` e uma rotina de uso UNICO para migrar as credenciais
-do ensaio local. Atualiza a senha do administrador existente, as contas do
-MySQL e JWT. Gera recuperacao privada em `/root/imobiliaria-credentials` e
-recusa uma segunda execucao. Nao altera o email administrativo.
+A migracao inicial de credenciais foi concluida. Os arquivos privados em
+`/root/imobiliaria-credentials` devem ser preservados fora do Git; snapshots
+antigos nao representam necessariamente as senhas atuais.
 
-Se houver falha parcial, nao execute novamente nem restaure apenas o `.env`:
-compare o estado do MySQL com `previous.env` e `new.env` na pasta privada de
-recuperacao e ajuste as contas antes de reiniciar os servicos. ALTER USER nao
-e transacional. `verify-private-login.py` testa o novo login sem imprimir JWT.
+Alterar apenas o `.env` nao troca a senha de usuarios existentes no banco.
+Use `verify-private-login.py` para validar o login pelo tunel e
+`verify-public-admin.py` para validar HTTPS, autenticacao e limite de login.
 
 Atualizacoes automaticas de seguranca do Ubuntu estao habilitadas. Reinicios
 necessarios devem ser acompanhados pelo operador; nao ha reinicio automatico
