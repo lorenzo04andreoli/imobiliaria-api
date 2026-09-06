@@ -1,5 +1,8 @@
 # Use after the production IP certificate has been issued.
 services:
+  api-prod:
+    environment:
+      APP_CORS_ALLOWED_ORIGINS: https://54.94.105.56,http://localhost:8081,http://127.0.0.1:8081
   public-ip:
     ports:
       - "443:443"

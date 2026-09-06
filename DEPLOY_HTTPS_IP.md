@@ -2,7 +2,11 @@
 
 IP atual: `54.94.105.56`. Certificado publico do Let's Encrypt, perfil
 `shortlived` (160 horas), emitido pelo Certbot snap 5.8.0 usando webroot.
-O painel e a autenticacao continuam restritos ao tunel SSH.
+O painel esta disponivel em `https://54.94.105.56/admin/login`.
+O backend exige JWT para operacoes administrativas. O proxy limita o login
+a cinco requisicoes por minuto por IP, com burst de cinco; excesso recebe 429.
+O tunel SSH permanece como acesso alternativo. CORS permite apenas o endereco
+HTTPS do site e as duas origens locais do tunel.
 
 ## Operacao normal
 
