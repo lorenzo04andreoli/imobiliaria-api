@@ -1,0 +1,9 @@
+[Unit]
+Description=Backup of imobiliaria database and photos
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/imobiliaria-backup
+UMask=0077
