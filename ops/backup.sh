@@ -14,11 +14,19 @@ docker stop imobiliaria-api-prod >/dev/null
 docker exec imobiliaria-mysql-prod sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysqldump -uroot --single-transaction --quick --no-tablespaces --set-gtid-purged=OFF "$MYSQL_DATABASE"' | gzip > "$destination/database.sql.gz"
 uploads=$(docker volume inspect imobiliaria_api_uploads --format '{{.Mountpoint}}')
 tar -czf "$destination/uploads.tar.gz" -C "$uploads" .
-tar -czf "$destination/config.tar.gz" -C /opt/imobiliaria/imobiliaria-api .env.prod docker-compose.prod.yml docker-compose.ip.yml nginx-public-ip.conf
+config_files=(.env.prod docker-compose.prod.yml docker-compose.ip.yml nginx-public-ip.conf)
+for file in docker-compose.ip-https.yml nginx-ip-https.conf; do
+    if test -f "/opt/imobiliaria/imobiliaria-api/$file"; then config_files+=("$file"); fi
+done
+tar -czf "$destination/config.tar.gz" -C /opt/imobiliaria/imobiliaria-api "${config_files[@]}"
+if test -d /etc/letsencrypt/live; then
+    tar -czf "$destination/certificates.tar.gz" -C /etc letsencrypt
+    tar -tzf "$destination/certificates.tar.gz" >/dev/null
+fi
 gzip -t "$destination/database.sql.gz"
 tar -tzf "$destination/uploads.tar.gz" >/dev/null
 tar -tzf "$destination/config.tar.gz" >/dev/null
-(cd "$destination" && sha256sum database.sql.gz uploads.tar.gz config.tar.gz > SHA256SUMS)
+(cd "$destination" && sha256sum ./*.gz > SHA256SUMS)
 touch "$destination/COMPLETE"
 restart_api
 trap - EXIT

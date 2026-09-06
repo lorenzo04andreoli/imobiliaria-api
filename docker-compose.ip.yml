@@ -11,6 +11,7 @@ services:
       - "80:80"
     volumes:
       - ./nginx-public-ip.conf:/etc/nginx/conf.d/default.conf:ro
+      - /var/www/letsencrypt:/var/www/letsencrypt:ro
     depends_on:
       - front-prod
     logging:

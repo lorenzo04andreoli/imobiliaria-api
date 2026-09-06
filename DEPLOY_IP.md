@@ -1,5 +1,9 @@
 # Catalogo temporario pelo IP
 
+O servidor atual ja usa HTTPS. Siga `DEPLOY_HTTPS_IP.md` e seus TRES arquivos
+Compose nas atualizacoes. As instrucoes abaixo servem apenas para o bootstrap
+HTTP anterior a emissao do certificado.
+
 Este modo publica somente leitura via HTTP na porta 80. HTTP nao protege
 o conteudo contra interceptacao ou alteracao em transito. Nao e substituto
 para HTTPS em producao. Login e escrita ficam bloqueados no proxy publico.
