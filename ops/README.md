@@ -1,6 +1,6 @@
 # Operacao do servidor
 
-O painel atual e publico via HTTPS: https://54.94.105.56/admin/login.
+O painel atual e publico via HTTPS: https://elianecarneiroimoveis.com.br/admin/login.
 O tunel SSH e opcional. Consulte [o guia HTTPS](../DEPLOY_HTTPS_IP.md) para
 os tres arquivos Compose que devem ser usados nas atualizacoes.
 

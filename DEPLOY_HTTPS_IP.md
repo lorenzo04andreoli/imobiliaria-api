@@ -1,12 +1,16 @@
-# HTTPS no IP fixo
+# HTTPS no dominio e no IP fixo
 
-IP atual: `54.94.105.56`. Certificado publico do Let's Encrypt, perfil
-`shortlived` (160 horas), emitido pelo Certbot snap 5.8.0 usando webroot.
-O painel esta disponivel em `https://54.94.105.56/admin/login`.
+Endereco principal: `https://elianecarneiroimoveis.com.br`.
+O `www` redireciona para o dominio principal, preservando caminho e query.
+O painel esta em `https://elianecarneiroimoveis.com.br/admin/login`.
+O IP `54.94.105.56` continua disponivel como acesso alternativo.
+Ha dois certificados Let's Encrypt gerenciados pelo Certbot via webroot:
+`imobiliaria-dominio` para os dois nomes e `imobiliaria-ip` (perfil shortlived)
+para o IP. O nome deste guia e dos arquivos Compose foi mantido por compatibilidade.
 O backend exige JWT para operacoes administrativas. O proxy limita o login
 a cinco requisicoes por minuto por IP, com burst de cinco; excesso recebe 429.
 O tunel SSH permanece como acesso alternativo. CORS permite apenas o endereco
-HTTPS do site e as duas origens locais do tunel.
+HTTPS do dominio, www e IP, alem das duas origens locais do tunel.
 
 ## Operacao normal
 
@@ -33,7 +37,16 @@ sudo /snap/bin/certbot certonly --non-interactive --agree-tos --register-unsafel
 Leia e aceite os termos do Let's Encrypt antes de usar `--agree-tos`.
 Para ensaio, use `--staging` e diretorios separados para config, work e logs;
 nao sirva certificados de staging ao publico. Depois da emissao real, inicie
-com os tres arquivos. Nginx usa `/etc/letsencrypt/live/imobiliaria-ip`.
+com os tres arquivos somente quando AMBOS os certificados existirem.
+Nginx usa `/etc/letsencrypt/live/imobiliaria-ip` e
+`/etc/letsencrypt/live/imobiliaria-dominio`.
+
+Para emitir o certificado do dominio, confirme antes que os registros A
+do nome principal e do www apontam para `54.94.105.56`:
+
+```bash
+sudo /snap/bin/certbot certonly --non-interactive --agree-tos --register-unsafely-without-email --webroot -w /var/www/letsencrypt -d elianecarneiroimoveis.com.br -d www.elianecarneiroimoveis.com.br --cert-name imobiliaria-dominio
+```
 
 ## Renovacao
 
@@ -52,10 +65,15 @@ falhas com `journalctl -u snap.certbot.renew.service` e verifique a validade
 do certificado externamente. Ainda nao ha alertas externos de expiracao.
 O backup diario inclui certificados e chaves privadas; mantenha-o restrito.
 
-## Dominio futuro
+## DNS e verificacao
 
-O dominio pode ser adicionado depois. Configure seu DNS para o IP fixo e
-um certificado para esse nome antes de alterar as URLs. Nao inicie o Caddy
-do override EC2 junto com o Nginx publico: ambos usam as portas 80 e 443.
+Os dois registros A no Registro.br apontam para `54.94.105.56`; nao publique
+AAAA sem configurar e validar o acesso IPv6. O frontend usa `/api` e
+`/uploads`, sem precisar de rebuild para a troca de dominio.
+
+`sudo python3 ops/verify-public-admin.py` testa o dominio principal.
+Acrescente `--base-url https://54.94.105.56` para testar o acesso alternativo.
+Nao inicie o Caddy do override EC2 junto com o Nginx publico: ambos usam
+as portas 80 e 443.
 
 Referencia: https://letsencrypt.org/2026/03/11/shorter-certs-certbot/

@@ -1,11 +1,15 @@
 """Read-only HTTPS administrator checks; never print passwords or tokens."""
 import json
+import argparse
 from pathlib import Path
 import time
 import urllib.error
 import urllib.request
 
-base = 'https://54.94.105.56'
+parser = argparse.ArgumentParser()
+parser.add_argument('--base-url', choices=['https://54.94.105.56',
+    'https://elianecarneiroimoveis.com.br'], default='https://elianecarneiroimoveis.com.br')
+base = parser.parse_args().base_url
 
 def request(path, body=None, headers=None):
     req = urllib.request.Request(base + path, data=body, headers=headers or {})

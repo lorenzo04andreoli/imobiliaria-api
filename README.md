@@ -13,9 +13,12 @@ O projeto faz parte de uma aplicacao full stack composta por:
 
 Hospedagem: AWS Lightsail em Sao Paulo, Ubuntu 24.04, com Docker Compose.
 
-- Site: https://54.94.105.56
-- Painel: https://54.94.105.56/admin/login
-- API publica: https://54.94.105.56/api/imoveis
+- Site: https://elianecarneiroimoveis.com.br
+- Painel: https://elianecarneiroimoveis.com.br/admin/login
+- API publica: https://elianecarneiroimoveis.com.br/api/imoveis
+
+O www redireciona para o dominio principal. O IP `54.94.105.56` permanece
+como acesso alternativo por HTTPS.
 
 O painel esta disponivel por HTTPS, sem necessidade de tunel SSH. Credenciais
 nao sao publicadas neste repositorio. O proxy limita tentativas de login;
@@ -399,7 +402,7 @@ docker compose -p imobiliaria --env-file .env.prod -f docker-compose.prod.yml do
 
 Nao use `down -v` em producao: ele remove os volumes do banco e dos uploads.
 
-O deploy atual usa Lightsail com HTTPS no IP fixo. No servidor, siga o guia
+O deploy atual usa Lightsail com HTTPS no dominio e no IP fixo. No servidor, siga o guia
 abaixo e use os tres arquivos Compose indicados nele para preservar HTTPS:
 
 ```txt
@@ -671,8 +674,8 @@ app.cors.allowed-origins=${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200,http:/
 ```
 
 No deploy atual, `docker-compose.ip-https.yml` define a origem
-`https://54.94.105.56` e as origens locais do tunel na porta 8081.
-Quando houver dominio, atualize esse override junto com DNS e certificado.
+`https://elianecarneiroimoveis.com.br`, o www, o IP HTTPS e as origens locais
+do tunel na porta 8081. Mantenha esse override alinhado com DNS e certificados.
 
 ## Commits
 
